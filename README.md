@@ -13,4 +13,4 @@ These words include the words for the hours and minutes.
 The other words such as "vor" and "nach" are hard coded.
 
 # LED Matrix Layout
-<img src="https://github.com/Felix-Seip/ArduinoWordClock/blob/master/images/wiring-layout.png" data-canonical-src="https://github.com/Felix-Seip/ArduinoWordClock/blob/master/images/wiring-layout.png" width="200" height="200" />
+<img src="https://github.com/Felix-Seip/ArduinoWordClock/blob/master/images/wiring-layout.png" data-canonical-src="https://github.com/Felix-Seip/ArduinoWordClock/blob/master/images/wiring-layout.png" width="400" height="400" />
