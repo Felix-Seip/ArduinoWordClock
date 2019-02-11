@@ -35,3 +35,6 @@ The above image shows the way to set up the wiring for the electronic components
 
 # ClockElement class
 The ClockElement class describes a numerical word on the clock. It contains the definition for the range of LEDs that need to be lit up to display the full word, the element type, either HOUR or MINUTE, and the numerical values that it represents it. The class is very minimal and covers the necessary words to describe the time. 
+
+# How to get this code up and running on your own word clock
+After setting up the electronics for your word clock, as described above, all you have to do is clone this repository and open it in the Arduino IDE. Choose the board that you are using through the tools menu and select the correct USB port. After doing this, you can upload the code, like uploading every other code, by simply pressing the upload button. 
