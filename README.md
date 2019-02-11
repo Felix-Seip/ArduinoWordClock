@@ -27,6 +27,9 @@ Each LED strip contains 11 LEDs, thus the LED matrix is an 11 x 11.
 
 The main entry point for the data and the power must be at the bottom left of the LED matrix. The data and power then travel from left to right, until reaching the last LED on the first strip. The next row is connected to the end of the first rows power, ground, and data pin, meaning that the second rows flow is from right to left. This continues all the way to the top where the last LED is at the top right of the LED matrix.
 
+The layout looks like follows:
+<img src="https://github.com/Felix-Seip/ArduinoWordClock/blob/master/images/matrix-layout.jpg" data-canonical-src="https://github.com/Felix-Seip/ArduinoWordClock/blob/master/images/matrix-layout.jpg" width="400" height="400" />
+
 ## Setting Up the Wiring 
 <img src="https://github.com/Felix-Seip/ArduinoWordClock/blob/master/images/wiring-layout.png" data-canonical-src="https://github.com/Felix-Seip/ArduinoWordClock/blob/master/images/wiring-layout.png" width="400" height="400" />
 
