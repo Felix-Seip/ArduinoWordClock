@@ -29,6 +29,7 @@ The main entry point for the data and the power must be at the bottom left of th
 
 The layout looks like follows:
 <br/>
+<br/>
 <img src="https://github.com/Felix-Seip/ArduinoWordClock/blob/master/images/matrix-layout.jpg" data-canonical-src="https://github.com/Felix-Seip/ArduinoWordClock/blob/master/images/matrix-layout.jpg" width="400" height="400" />
 
 ## Setting Up the Wiring 
