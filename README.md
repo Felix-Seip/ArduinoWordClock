@@ -42,3 +42,9 @@ The ClockElement class describes a numerical word on the clock. It contains the 
 
 ## How do I Get This Code Up and Running on My Own Word Clock?
 After setting up the electronics for your word clock, as described above, all you have to do is clone this repository and open it in the Arduino IDE. Choose the board that you are using through the tools menu and select the correct USB port. After doing this, you can upload the code, like uploading every other code, by simply pressing the upload button. 
+
+## Required Additional Libraries
+This code uses a few etxernal libraries that made interfacing with the hardware easier. The following libraries need to be downloaded and placed into the Arduino IDEs library folder:
+- https://github.com/PaulStoffregen/Time
+- https://www.arduinolibraries.info/libraries/vector
+- https://www.arduinolibraries.info/libraries/ds1307-rtc
