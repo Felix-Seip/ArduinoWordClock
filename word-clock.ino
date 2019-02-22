@@ -1,3 +1,5 @@
+#include <OneWire.h>
+#include <DallasTemperature.h>
 #include <Vector.h>
 
 #include <Wire.h>
@@ -12,15 +14,23 @@
 #define NUM_CLOCK_ELEMENTS 19
 
 #define DATA_PIN 5
+#define pResistor A0
+#define ONE_WIRE_BUS 2
 
+int brightness = 255;
 // Define the array of leds
 CRGB leds[NUM_LEDS];
 
 Vector<ClockElement> timeClockElements;
 
-//   Eins, Zwei, Drei, Vier, Fünf, Sechs, Sieben, Acht, Neun, Zehn, Elf, Zwölf, Null, Fünf, Zehn, Viertel, Zwanzig, Halb
+                                                //   Eins, Zwei, Drei, Vier, Fünf, Sechs, Sieben, Acht, Neun, Zehn, Elf, Zwölf, Null, Fünf, Zehn, Viertel, Zwanzig, Halb
 int timeClockElementRangeFrom[NUM_CLOCK_ELEMENTS] = { 44,    51,   40,   33,   55,   22,    26,     18,   3,    0,    58,  13,  -1,   117,  106,  92,      99,      62  };
 int timeClockElementRangeTo[NUM_CLOCK_ELEMENTS]   = { 48,    55,   44,   37,   59,   27,    32,     22,   7,    4,    61,  18,  -1,   121,  110,  99,      106,     66  };
+
+//CRGB temperatureColors[15] = {CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB()}
+
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
 
 void createClockElements()
 {
@@ -68,6 +78,10 @@ void createClockElements()
 void setup()
 {
   Serial.begin(9600);
+  
+  pinMode(pResistor, INPUT);
+  
+  sensors.begin();
   Wire.begin();
   FastLED.addLeds<WS2812B, DATA_PIN>(leds, NUM_LEDS);
   createClockElements();
@@ -96,7 +110,27 @@ void loop()
     leds[10] = CRGB(255, 255, 255);
   }
 
+  //Get the temperature of the room
+  sensors.requestTemperatures(); 
+  float celsius = sensors.getTempCByIndex(0);
+  tempToRGB(celsius);
+
+  // TODO: Read the light sensor to set the brightness
+  int photoResistorValue = analogRead(pResistor);
+  //Serial.print("Current Photoresistor Value: ");
+  //Serial.print(photoResistorValue); 
+  
+  FastLED.setBrightness(brightness);
   FastLED.show();
+}
+
+void tempToRGB(float temperature) {
+  int red = map(temperature, 20, 40, 0, 255);
+  int blue = 255 - red;
+  
+  leds[11].red = blue;
+  leds[11].green = 0;
+  leds[11].blue = red;
 }
 
 void showHourLEDs(int &hours) {
@@ -156,6 +190,8 @@ void resetAllLEDs() {
   leds[8] = CRGB(0, 0, 0);
   leds[9] = CRGB(0, 0, 0);
   leds[10] = CRGB(0, 0, 0);
+
+  leds[11] = CRGB(0, 0, 0);
 
   leds[66] = CRGB(0, 0, 0);
   leds[67] = CRGB(0, 0, 0);
