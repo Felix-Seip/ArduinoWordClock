@@ -14,8 +14,8 @@
 #define NUM_CLOCK_ELEMENTS 19
 
 #define DATA_PIN 5
-#define pResistor A0
-#define ONE_WIRE_BUS 2
+#define pResistor A5
+#define ONE_WIRE_BUS 7
 
 int brightness = 255;
 // Define the array of leds
@@ -83,6 +83,7 @@ void setup()
   
   sensors.begin();
   Wire.begin();
+  
   FastLED.addLeds<WS2812B, DATA_PIN>(leds, NUM_LEDS);
   createClockElements();
 }
@@ -101,6 +102,7 @@ void loop()
   resetAllLEDs();
   showMinuteLEDs(minutes, hours, showUhrWord);
   showHourLEDs(hours);
+  tempToRGB();
 
   if (showUhrWord)
   {
@@ -110,27 +112,31 @@ void loop()
     leds[10] = CRGB(255, 255, 255);
   }
 
-  //Get the temperature of the room
-  sensors.requestTemperatures(); 
-  float celsius = sensors.getTempCByIndex(0);
-  tempToRGB(celsius);
-
   // TODO: Read the light sensor to set the brightness
   int photoResistorValue = analogRead(pResistor);
-  //Serial.print("Current Photoresistor Value: ");
-  //Serial.print(photoResistorValue); 
+  
+  if(photoResistorValue >= 800){
+    brightness = 255;
+  } else if (photoResistorValue < 800 && photoResistorValue >= 700){
+    brightness = 150;
+  } else if (photoResistorValue < 700 && photoResistorValue >= 500){
+    brightness = 50;
+  }
+
+  Serial.print("Loop");
   
   FastLED.setBrightness(brightness);
   FastLED.show();
 }
 
-void tempToRGB(float temperature) {
-  int red = map(temperature, 20, 40, 0, 255);
-  int blue = 255 - red;
-  
-  leds[11].red = blue;
-  leds[11].green = 0;
-  leds[11].blue = red;
+void tempToRGB() {
+  sensors.requestTemperatures(); 
+  sensors.getTempCByIndex(0);
+  if(sensors.getTempCByIndex(0) > 25){
+    leds[11] = CRGB(0, 255, 0);  
+    return;
+  }
+  leds[11] = CRGB(0, 0, 255);
 }
 
 void showHourLEDs(int &hours) {
@@ -205,10 +211,11 @@ void resetAllLEDs() {
   for (int i = 0; i < timeClockElements.size(); i++)
   {
     ClockElement clockElement = timeClockElements[i];
+    
     for (int k = clockElement.GetRangeFrom(); k < clockElement.GetRangeTo(); k++)
     {
       leds[k] = CRGB(0, 0, 0);
-    }
+    } 
   }
 }
 
@@ -246,7 +253,7 @@ void setColorForClockElement(ClockElement clockElement, int r, int g, int b) {
 }
 
 ClockElement findClockElementByNumericValueAndType(int numericValue, CLOCK_ELEMENT_TYPE elementType) {
-  ClockElement foundElement;
+  ClockElement *foundElement = NULL;
 
   for (int i = 0; i < timeClockElements.size(); i++)
   {
@@ -260,5 +267,5 @@ ClockElement findClockElementByNumericValueAndType(int numericValue, CLOCK_ELEME
     }
   }
 
-  return foundElement;
+  return *foundElement;
 }
