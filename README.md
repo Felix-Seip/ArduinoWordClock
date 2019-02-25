@@ -19,6 +19,8 @@ The following list is the part list required to recreate this word clock:
 - DS1307 RTC. The RTC is used to control the LEDs and show the words on the clock
 - DS18B20 Temperature Sensor. The sensor is used to display the temperature of the room that the clock is in
 - GL5528 Photoresistor. The photoresistor is used to set the brightness of the LEDs depending on how bright it is in the room
+- 1 x 10k Ohm Resistor
+- 1 x 4.7k Ohm Resistor
 - Arduino UNO or any other microcontroller with an ATMega328P chip
 
 ## LED Matrix Layout
