@@ -159,16 +159,16 @@ void showMinuteLEDs(int minutes, int &hours, bool &showUhrWord) {
   }
 
   if (minutes != 0) {
-    if (minutes == 25 || minutes == 35)
+    if ((minutes >= 25 && minutes < 30) || (minutes >= 35 && minutes < 40))
     {
-      ClockElement element = findClockElementByNumericValueAndType(5, MINUTE);
+      ClockElement element = findClockElementByNumericValueAndType(minutes, MINUTE);
       setColorForClockElement(element, 255, 255, 255);
 
-      if (minutes == 25)
+      if (minutes >= 25 && minutes < 30)
       {
         showWordVor();
       }
-      else if (minutes == 35)
+      else if (minutes >= 35 && minutes < 40)
       {
         showWordNach();
       }
@@ -183,7 +183,8 @@ void showMinuteLEDs(int minutes, int &hours, bool &showUhrWord) {
       showWordVor();
     }
 
-    if(60 - minutes < 25 || minutes == 25 || minutes == 35 || minutes == 30) {
+    if(60 - minutes < 25 || (minutes >= 25 && minutes < 30) || 
+      (minutes >= 35 && minutes < 40) || minutes == 30) {
       hours = hours + 1;
     }
   }
@@ -260,7 +261,7 @@ ClockElement findClockElementByNumericValueAndType(int numericValue, CLOCK_ELEME
     ClockElement clockElement = timeClockElements[i];
     for (int j = 0; j <= clockElement.GetNumericValuesArrayLength(); j++)
     {
-      if (numericValue == clockElement.GetNumericValueAtIndex(j) && clockElement.GetClockElementType() == elementType)
+      if (numericValue >= clockElement.GetNumericValueAtIndex(j) && numericValue < (clockElement.GetNumericValueAtIndex(j) + 5) && clockElement.GetClockElementType() == elementType)
       {
         return timeClockElements[i];
       }
