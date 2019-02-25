@@ -132,7 +132,7 @@ void loop()
 void tempToRGB() {
   sensors.requestTemperatures(); 
   sensors.getTempCByIndex(0);
-  if(sensors.getTempCByIndex(0) > 25){
+  if(sensors.getTempCByIndex(0) > 26){
     leds[11] = CRGB(0, 255, 0);  
     return;
   }
