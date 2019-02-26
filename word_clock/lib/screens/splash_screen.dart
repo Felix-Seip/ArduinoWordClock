@@ -8,6 +8,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   bool _visible = false;
 
+  @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback(
