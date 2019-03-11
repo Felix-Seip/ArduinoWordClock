@@ -10,7 +10,7 @@
 
 #include "ClockElement.h"
 
-#define NUM_LEDS 121
+#define NUM_LEDS 125
 #define NUM_CLOCK_ELEMENTS 19
 
 #define DATA_PIN 5
@@ -98,8 +98,8 @@ void loop()
 
   bool showUhrWord = true;
 
-  showBasicClockElements();
   resetAllLEDs();
+  showBasicClockElements();
   showMinuteLEDs(minutes, hours, showUhrWord);
   showHourLEDs(hours);
   tempToRGB();
@@ -145,23 +145,19 @@ void showHourLEDs(int &hours) {
 }
 
 void showMinuteLEDs(int minutes, int &hours, bool &showUhrWord) {
-  if ((minutes % 5) != 0) {
-    return;
-  }
-  
   ClockElement clockElement = findClockElementByNumericValueAndType(minutes, MINUTE);
 
-  if (minutes == 0) {
+  if (minutes >= 0 && minutes < 5) {
     showUhrWord = true;
   }
   else {
     showUhrWord = false;
   }
-
+  
   if (minutes != 0) {
     if ((minutes >= 25 && minutes < 30) || (minutes >= 35 && minutes < 40))
-    {
-      ClockElement element = findClockElementByNumericValueAndType(minutes, MINUTE);
+    { 
+      ClockElement element = findClockElementByNumericValueAndType(5, MINUTE);
       setColorForClockElement(element, 255, 255, 255);
 
       if (minutes >= 25 && minutes < 30)
@@ -174,49 +170,36 @@ void showMinuteLEDs(int minutes, int &hours, bool &showUhrWord) {
       }
     }
 
-    if (60 - minutes > 35)
+    if (60 - minutes > 35 && !(minutes >= 0 && minutes < 5))
     {
       showWordNach();
     }
-    else if (60 - minutes < 25)
+    else if (60 - minutes < 25 && !(minutes >= 0 && minutes < 5))
     {
       showWordVor();
     }
 
     if(60 - minutes < 25 || (minutes >= 25 && minutes < 30) || 
-      (minutes >= 35 && minutes < 40) || minutes == 30) {
+      (minutes >= 35 && minutes < 40) || (minutes >= 30 && minutes < 35)) {
       hours = hours + 1;
     }
+    showLeftOverMinuteLEDs(minutes % 5);
   }
 
   setColorForClockElement(clockElement, 255, 255, 255);
 }
 
+void showLeftOverMinuteLEDs(int leftOverMinutes){
+  Serial.write(leftOverMinutes);
+  for(int i = 121; i < 121 + leftOverMinutes; i++){
+    leds[i] = CRGB(255, 255, 255);
+  }
+}
+
 void resetAllLEDs() {
   //Reset time words
-  leds[8] = CRGB(0, 0, 0);
-  leds[9] = CRGB(0, 0, 0);
-  leds[10] = CRGB(0, 0, 0);
-
-  leds[11] = CRGB(0, 0, 0);
-
-  leds[66] = CRGB(0, 0, 0);
-  leds[67] = CRGB(0, 0, 0);
-  leds[68] = CRGB(0, 0, 0);
-  leds[69] = CRGB(0, 0, 0);
-
-  leds[85] = CRGB(0, 0, 0);
-  leds[86] = CRGB(0, 0, 0);
-  leds[87] = CRGB(0, 0, 0);
-
-  for (int i = 0; i < timeClockElements.size(); i++)
-  {
-    ClockElement clockElement = timeClockElements[i];
-    
-    for (int k = clockElement.GetRangeFrom(); k < clockElement.GetRangeTo(); k++)
-    {
-      leds[k] = CRGB(0, 0, 0);
-    } 
+  for(int i = 0; i < NUM_LEDS; i++){
+    leds[i] = CRGB(0, 0, 0);
   }
 }
 
@@ -261,9 +244,16 @@ ClockElement findClockElementByNumericValueAndType(int numericValue, CLOCK_ELEME
     ClockElement clockElement = timeClockElements[i];
     for (int j = 0; j <= clockElement.GetNumericValuesArrayLength(); j++)
     {
-      if (numericValue >= clockElement.GetNumericValueAtIndex(j) && numericValue < (clockElement.GetNumericValueAtIndex(j) + 5) && clockElement.GetClockElementType() == elementType)
-      {
-        return timeClockElements[i];
+      if(elementType == MINUTE && clockElement.GetClockElementType() == MINUTE){
+        if (numericValue >= clockElement.GetNumericValueAtIndex(j) && numericValue < (clockElement.GetNumericValueAtIndex(j) + 5))
+        {
+          return timeClockElements[i];
+        } 
+      } else if(elementType == HOUR && clockElement.GetClockElementType() == HOUR) {
+        if (numericValue == clockElement.GetNumericValueAtIndex(j) )
+        {
+          return timeClockElements[i];
+        }  
       }
     }
   }

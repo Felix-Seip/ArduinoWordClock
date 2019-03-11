@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_blue/flutter_blue.dart';
+import 'package:after_layout/after_layout.dart';
 
 import 'dart:async';
 
@@ -8,7 +9,7 @@ import './screens/splash_screen.dart';
 import './screens/home_screen.dart';
 
 enum ClockMode { Rainbow, Breathing }
-String _deviceName = "WordClock";
+String _deviceName = "DSD TECH";
 
 void main() => runApp(MyApp());
 
@@ -17,90 +18,122 @@ class MyApp extends StatefulWidget {
   _MyApp createState() => _MyApp();
 }
 
-class _MyApp extends State<MyApp> {
+class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
   FlutterBlue _flutterBlue;
   BluetoothDevice _connectedDevice;
   BluetoothDeviceState _deviceState = BluetoothDeviceState.disconnected;
   StreamSubscription _deviceStateSubscription;
   List<BluetoothService> _services = new List();
 
+  var scanSubscription;
+  var deviceConnection;
+
+  static const int timeout = 3;
+
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(
-      //Scan for clock
-      (_) => {},
-    );
+  void afterFirstLayout(BuildContext context) {
+    // Calling the same function "after layout" to resolve the issue.
+    _scanDevices();
   }
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(primaryColor: Color.fromARGB(255, 34, 116, 165)),
+      theme: ThemeData(
+        primaryColor: Color.fromARGB(255, 94, 80, 63),
+        accentColor: Color.fromARGB(255, 94, 80, 63),
+      ),
       home: Scaffold(
-        body: _connectedDevice == null ? SplashScreen() : HomeScreen(),
+        body: HomeScreen(_connectedDevice, _connect, _disconnect),
       ),
     );
   }
 
-  void _scanDevices() {
-    _flutterBlue.scan().listen((scanResult) {
-      String deviceName = scanResult.device.name.toLowerCase();
-      if (deviceName.compareTo(_deviceName.toLowerCase()) == 1) {
-        _connect(scanResult.device);
-      }
-    });
+  void _scanDevices() async {
+    _flutterBlue = FlutterBlue.instance;
+    print("Scanning for devices");
+    scanSubscription = _flutterBlue.scan().listen(
+      (scanResult) {
+        String deviceName = scanResult.device.name.toLowerCase();
+        print("Found device with name " + deviceName);
+        if (deviceName.compareTo(_deviceName.toLowerCase()) == 0) {
+          _connect(scanResult.device);
+        }
+      },
+    );
   }
 
   void _connect(BluetoothDevice device) async {
+    print("Cancelling scan subscription...");
+    scanSubscription.cancel();
+
+    print("Connecting to device " + device.name);
     //Connect to the device
-    _flutterBlue.connect(device, timeout: const Duration(seconds: 4)).listen(
-          //onError: _showConnectionError,
+    deviceConnection = _flutterBlue
+        .connect(
+          device,
+          timeout: const Duration(seconds: 4),
+        )
+        .listen(
           null,
           onDone: _disconnect,
         );
 
     // Update the connection state immediately
-    device.state.then((state) {
-      setState(() {
-        //Only show move on to the HomeScreen when the device has been connected successfully
-        if (state == BluetoothDeviceState.connected) {
-          _connectedDevice = device;
-        } else if (state == BluetoothDeviceState.disconnected) {
-          //Show "device disconnected" message
-        }
-        _deviceState = state;
-      });
-    });
+    device.state.then(
+      (state) {
+        new Future.delayed(const Duration(seconds: timeout), () {
+          setState(
+            () {
+              _connectedDevice = device;
+              _deviceState = state;
+            },
+          );
+        });
+      },
+    );
 
     // Subscribe to connection changes
-    _deviceStateSubscription = device.onStateChanged().listen((state) {
-      setState(() {
-        _deviceState = state;
-      });
+    _deviceStateSubscription = device.onStateChanged().listen(
+      (state) {
+        setState(
+          () {
+            _deviceState = state;
+          },
+        );
 
-      if (state == BluetoothDeviceState.connected) {
-        device.discoverServices().then((services) {
-          setState(() {
-            _services = services;
-          });
-        });
-      }
-    });
+        if (state == BluetoothDeviceState.connected) {
+          device.discoverServices().then(
+            (services) {
+              setState(
+                () {
+                  _services = services;
+                },
+              );
+            },
+          );
+        }
+      },
+    );
   }
+
+  startTimeout([int milliseconds]) {}
+
+  void handleTimeout() {}
 
   void _showConnectionError() {
     throw new UnimplementedError();
   }
 
   void _disconnect() {
+    deviceConnection.cancel();
     _connectedDevice = null;
     _deviceStateSubscription?.cancel();
     _deviceStateSubscription = null;
   }
 
-  void _writeCharacteristic(BluetoothCharacteristic c) async {
+  void _writeCharacteristic() async {
     throw new UnimplementedError();
     //await _connectedDevice.writeCharacteristic(c, [0x12, 0x34], type: CharacteristicWriteType.withResponse);
   }
