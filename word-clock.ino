@@ -88,8 +88,30 @@ void setup()
   createClockElements();
 }
 
+char color[3] = {255, 255, 255};
+String inString = "";
+
 void loop()
 {
+  int colorIndex = 0;
+  if(Serial.available() > 0) {
+    while(Serial.available() > 0){
+      char nextChar = Serial.read();
+      if(isDigit(nextChar) && nextChar != ' ')
+      {
+        inString += nextChar;
+      } 
+      else if (nextChar == ',')
+      {
+        Serial.println(inString.toInt());
+
+        color[colorIndex] = inString.toInt();
+        colorIndex++;
+        inString = "";
+      }  
+    }
+  } 
+  
   tmElements_t tm;
   RTC.read(tm);
 
@@ -107,9 +129,9 @@ void loop()
   if (showUhrWord)
   {
     //Light up the LEDs for the word "UHR"
-    leds[8] = CRGB(255, 255, 255);
-    leds[9] = CRGB(255, 255, 255);
-    leds[10] = CRGB(255, 255, 255);
+    leds[8] = CRGB(color[1], color[0], color[2]);
+    leds[9] = CRGB(color[1], color[0], color[2]);
+    leds[10] = CRGB(color[1], color[0], color[2]);
   }
 
   // TODO: Read the light sensor to set the brightness
@@ -122,8 +144,6 @@ void loop()
   } else if (photoResistorValue < 700 && photoResistorValue >= 500){
     brightness = 50;
   }
-
-  Serial.print("Loop");
   
   FastLED.setBrightness(brightness);
   FastLED.show();
@@ -141,7 +161,7 @@ void tempToRGB() {
 
 void showHourLEDs(int &hours) {
   ClockElement clockElement = findClockElementByNumericValueAndType(hours, HOUR);
-  setColorForClockElement(clockElement, 255, 255, 255);
+  setColorForClockElement(clockElement, color[1], color[0], color[2]);
 }
 
 void showMinuteLEDs(int minutes, int &hours, bool &showUhrWord) {
@@ -158,7 +178,7 @@ void showMinuteLEDs(int minutes, int &hours, bool &showUhrWord) {
     if ((minutes >= 25 && minutes < 30) || (minutes >= 35 && minutes < 40))
     { 
       ClockElement element = findClockElementByNumericValueAndType(5, MINUTE);
-      setColorForClockElement(element, 255, 255, 255);
+      setColorForClockElement(element, color[0], color[1], color[2]);
 
       if (minutes >= 25 && minutes < 30)
       {
@@ -186,13 +206,12 @@ void showMinuteLEDs(int minutes, int &hours, bool &showUhrWord) {
     showLeftOverMinuteLEDs(minutes % 5);
   }
 
-  setColorForClockElement(clockElement, 255, 255, 255);
+  setColorForClockElement(clockElement, color[1], color[0], color[2]);
 }
 
 void showLeftOverMinuteLEDs(int leftOverMinutes){
-  Serial.write(leftOverMinutes);
   for(int i = 121; i < 121 + leftOverMinutes; i++){
-    leds[i] = CRGB(255, 255, 255);
+    leds[i] = CRGB(color[1], color[0], color[2]);
   }
 }
 
@@ -205,34 +224,34 @@ void resetAllLEDs() {
 
 void showBasicClockElements() {
   //Light up the LEDs for the word "ES"
-  leds[110] = CRGB(255, 255, 255);
-  leds[111] = CRGB(255, 255, 255);
+  leds[110] = CRGB(color[1], color[0], color[2]);
+  leds[111] = CRGB(color[1], color[0], color[2]);
 
   //Light up the LEDs for the word "IST"
-  leds[113] = CRGB(255, 255, 255);
-  leds[114] = CRGB(255, 255, 255);
-  leds[115] = CRGB(255, 255, 255);
+  leds[113] = CRGB(color[1], color[0], color[2]);
+  leds[114] = CRGB(color[1], color[0], color[2]);
+  leds[115] = CRGB(color[1], color[0], color[2]);
 }
 
 void showWordVor() {
   //Light up the LEDs for the word "VOR"
-  leds[85] = CRGB(255, 255, 255);
-  leds[86] = CRGB(255, 255, 255);
-  leds[87] = CRGB(255, 255, 255);
+  leds[85] = CRGB(color[1], color[0], color[2]);
+  leds[86] = CRGB(color[1], color[0], color[2]);
+  leds[87] = CRGB(color[1], color[0], color[2]);
 }
 
 void showWordNach() {
   //Light up the LEDs for the word "NACH"
-  leds[66] = CRGB(255, 255, 255);
-  leds[67] = CRGB(255, 255, 255);
-  leds[68] = CRGB(255, 255, 255);
-  leds[69] = CRGB(255, 255, 255);
+  leds[66] = CRGB(color[1], color[0], color[2]);
+  leds[67] = CRGB(color[1], color[0], color[2]);
+  leds[68] = CRGB(color[1], color[0], color[2]);
+  leds[69] = CRGB(color[1], color[0], color[2]);
 }
 
 void setColorForClockElement(ClockElement clockElement, int r, int g, int b) {
   for (int k = clockElement.GetRangeFrom(); k < clockElement.GetRangeTo(); k++)
   {
-    leds[k] = CRGB(255, 255, 255);
+    leds[k] = CRGB(r, g, b);
   }
 }
 

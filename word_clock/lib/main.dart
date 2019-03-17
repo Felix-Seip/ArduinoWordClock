@@ -28,6 +28,8 @@ class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
   var scanSubscription;
   var deviceConnection;
 
+  bool _isPastSplashScreen = false;
+
   static const int timeout = 3;
 
   @override
@@ -45,30 +47,45 @@ class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
         accentColor: Color.fromARGB(255, 94, 80, 63),
       ),
       home: Scaffold(
-        body: HomeScreen(_connectedDevice, _connect, _disconnect),
+        body: _connectedDevice == null && !_isPastSplashScreen
+            ? SplashScreen(_scanDevices)
+            : HomeScreen(_flutterBlue, _connectedDevice, _scanDevices,
+                _disconnect, _setLEDColor),
       ),
     );
   }
 
-  void _scanDevices() async {
+  void _scanDevices([Function _onDeviceConnectionRestored]) async {
     _flutterBlue = FlutterBlue.instance;
+    if (_onDeviceConnectionRestored != null) {
+      _isPastSplashScreen = true;
+    }
     print("Scanning for devices");
-    scanSubscription = _flutterBlue.scan().listen(
-      (scanResult) {
-        String deviceName = scanResult.device.name.toLowerCase();
-        print("Found device with name " + deviceName);
-        if (deviceName.compareTo(_deviceName.toLowerCase()) == 0) {
-          _connect(scanResult.device);
-        }
-      },
-    );
+
+    try {
+      scanSubscription = _flutterBlue.scan().listen(
+        (scanResult) {
+          String deviceName = scanResult.device.name.toLowerCase();
+          print("Found device with name " + deviceName);
+          if (deviceName.compareTo(_deviceName.toLowerCase()) == 0) {
+            _connect(scanResult.device, _onDeviceConnectionRestored);
+          }
+        },
+      );
+    } catch (ex) {
+      print(ex);
+    }
   }
 
-  void _connect(BluetoothDevice device) async {
+  void _connect(BluetoothDevice device,
+      [Function _onDeviceConnectionRestored]) async {
     print("Cancelling scan subscription...");
     scanSubscription.cancel();
 
     print("Connecting to device " + device.name);
+
+    _disconnect();
+
     //Connect to the device
     deviceConnection = _flutterBlue
         .connect(
@@ -104,38 +121,66 @@ class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
         );
 
         if (state == BluetoothDeviceState.connected) {
-          device.discoverServices().then(
-            (services) {
-              setState(
-                () {
-                  _services = services;
-                },
-              );
-            },
-          );
+          if (_onDeviceConnectionRestored != null) {
+            device.discoverServices().then(
+              (services) {
+                _services = services;
+                _onDeviceConnectionRestored();
+              },
+            );
+          } else {
+            device.discoverServices().then(
+              (services) {
+                setState(
+                  () {
+                    _services = services;
+                  },
+                );
+              },
+            );
+          }
         }
       },
     );
   }
-
-  startTimeout([int milliseconds]) {}
-
-  void handleTimeout() {}
 
   void _showConnectionError() {
     throw new UnimplementedError();
   }
 
   void _disconnect() {
-    deviceConnection.cancel();
+    deviceConnection?.cancel();
     _connectedDevice = null;
     _deviceStateSubscription?.cancel();
     _deviceStateSubscription = null;
+    _services = [];
+    print("Device connection lost");
   }
 
-  void _writeCharacteristic() async {
-    throw new UnimplementedError();
-    //await _connectedDevice.writeCharacteristic(c, [0x12, 0x34], type: CharacteristicWriteType.withResponse);
+  void _writeCharacteristic(List<int> data) async {
+    for (BluetoothService service in _services) {
+      for (BluetoothCharacteristic characteristic in service.characteristics) {
+        //String bla = characteristic.uuid.toString();
+        print("Characteristic UUID: " + characteristic.uuid.toString());
+        if (characteristic.uuid.toString().toLowerCase().contains(
+              "FFE1".toLowerCase(),
+            )) {
+          try {
+            await _connectedDevice.writeCharacteristic(
+              characteristic,
+              data,
+              type: CharacteristicWriteType.withoutResponse,
+            );
+            break;
+          } catch (ex) {
+            print(
+              "Something went wrong while writing to the bluetooth device: " +
+                  ex.toString(),
+            );
+          }
+        }
+      }
+    }
   }
 
   void _writeDescriptor(BluetoothDescriptor d) async {
@@ -153,6 +198,10 @@ class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
     //_writeCharacteristic(null);
   }
 
-  void setLEDColor(final int r, final int g, final int b) {}
+  void _setLEDColor(final int r, final int g, final int b) {
+    String bla = "$r,$g,$b,";
+    _writeCharacteristic(bla.codeUnits);
+  }
+
   bool get isConnected => (_connectedDevice != null);
 }

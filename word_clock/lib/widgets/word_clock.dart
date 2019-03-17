@@ -56,7 +56,7 @@ class _WordClockState extends State<WordClock> {
   Color _defaultColor = Color.fromARGB(255, 0, 0, 0);
   List<ClockElement> _clockElements;
 
-  void setUpClockElements() {
+  /*void setUpClockElements() {
     for (int i = 1; i <= 12; i++) {
       List<int> numericValues = [];
       numericValues[0] = i;
@@ -72,10 +72,16 @@ class _WordClockState extends State<WordClock> {
             widget.elementPositionsTo[i - 1], numericValues, ElementType.HOUR),
       );
     }
-  }
+  }*/
 
   @override
   void initState() {
+    //setUpClockElements();
+    _setup();
+    super.initState();
+  }
+
+  void _setup() {
     _clockElements = widget._clockLetters
         .map(
           (title) => ClockElement(
@@ -84,12 +90,11 @@ class _WordClockState extends State<WordClock> {
               ),
         )
         .toList();
-    setUpClockElements();
-    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    _setup();
     return Padding(
       padding: EdgeInsets.all(50),
       child: GridView.count(
