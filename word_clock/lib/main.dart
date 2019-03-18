@@ -49,8 +49,14 @@ class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
       home: Scaffold(
         body: _connectedDevice == null && !_isPastSplashScreen
             ? SplashScreen(_scanDevices)
-            : HomeScreen(_flutterBlue, _connectedDevice, _scanDevices,
-                _disconnect, _setLEDColor),
+            : HomeScreen(
+                _flutterBlue,
+                _connectedDevice,
+                _scanDevices,
+                _disconnect,
+                _setLEDColor,
+                _setTime,
+              ),
       ),
     );
   }
@@ -188,9 +194,9 @@ class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
     //await _connectedDevice.writeDescriptor(d, [0x12, 0x34]);
   }
 
-  void setTime(final String message) {
-    throw new UnimplementedError();
-    //_writeCharacteristic(null);
+  void _setTime(final TimeOfDay time) {
+    String bla = "setTime(${time.hour},${time.minute})";
+    _writeCharacteristic(bla.codeUnits);
   }
 
   void setClockMode(final ClockMode mode) {
@@ -199,7 +205,7 @@ class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
   }
 
   void _setLEDColor(final int r, final int g, final int b) {
-    String bla = "$r,$g,$b,";
+    String bla = "setColor($r,$g,$b)";
     _writeCharacteristic(bla.codeUnits);
   }
 

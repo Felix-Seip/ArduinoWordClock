@@ -14,6 +14,7 @@ class HomeScreen extends StatefulWidget {
   final Function _connectToClock;
   final Function _disconnectFromClock;
   final Function _writeCharacteristic;
+  final Function _setTime;
 
   HomeScreen(
     this._flutterBlue,
@@ -21,6 +22,7 @@ class HomeScreen extends StatefulWidget {
     this._connectToClock,
     this._disconnectFromClock,
     this._writeCharacteristic,
+    this._setTime,
   );
 
   @override
@@ -60,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
     if (time != null) {
+      widget._setTime(time);
       _time = time;
     }
   }

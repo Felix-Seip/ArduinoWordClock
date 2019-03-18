@@ -89,27 +89,74 @@ void setup()
 }
 
 char color[3] = {255, 255, 255};
+int hours = -1;
+int minutes = -1;
+
 String inString = "";
 
 void loop()
 {
   int colorIndex = 0;
+  String command = "";
+  String fullCommand = "";
+  bool readCommand = true;
+  bool isHour = true;
   if(Serial.available() > 0) {
     while(Serial.available() > 0){
       char nextChar = Serial.read();
-      if(isDigit(nextChar) && nextChar != ' ')
-      {
-        inString += nextChar;
+      fullCommand += nextChar;
+      if(readCommand){
+        if(!isDigit(nextChar)){
+          command += nextChar;
+        } else {
+          readCommand = false;
+        }
       } 
-      else if (nextChar == ',')
-      {
-        Serial.println(inString.toInt());
 
-        color[colorIndex] = inString.toInt();
-        colorIndex++;
-        inString = "";
-      }  
+      if(command == "setColor(" && !readCommand) 
+      {
+        //Set the color
+        if(isDigit(nextChar))
+        {
+          inString += nextChar;
+        }
+        else if (nextChar == ',' || nextChar == ')')
+        {
+          color[colorIndex] = inString.toInt();
+          colorIndex++;
+          inString = "";
+        }
+      } 
+      else if(command == "setTime(")
+      {
+        //Set the time
+        if(isDigit(nextChar))
+        {
+          inString += nextChar;
+        }
+        else if (nextChar == ',' || nextChar == ')')
+        {
+          if(isHour)
+          {
+            hours = inString.toInt();
+            isHour = false;
+          } 
+          else 
+          {
+            minutes = inString.toInt();
+          }
+          inString = "";
+        }
+
+        if(!isHour){
+          tmElements_t tim_e;
+          tim_e.Hour = hours;
+          tim_e.Minute = minutes;
+          RTC.write(tim_e);
+        }
+      }
     }
+    Serial.println(fullCommand);
   } 
   
   tmElements_t tm;
