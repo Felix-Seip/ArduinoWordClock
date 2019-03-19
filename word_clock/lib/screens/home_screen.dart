@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import '../dialogs/color_picker_dialog.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:flushbar/flushbar.dart';
@@ -13,16 +13,16 @@ class HomeScreen extends StatefulWidget {
   final BluetoothDevice _wordClock;
   final Function _connectToClock;
   final Function _disconnectFromClock;
-  final Function _writeCharacteristic;
-  final Function _setTime;
+  final Function _setClockColor;
+  final Function _setClockTime;
 
   HomeScreen(
     this._flutterBlue,
     this._wordClock,
     this._connectToClock,
     this._disconnectFromClock,
-    this._writeCharacteristic,
-    this._setTime,
+    this._setClockColor,
+    this._setClockTime,
   );
 
   @override
@@ -30,10 +30,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Color currentColor = const Color.fromARGB(255, 0, 0, 0);
-  TimeOfDay _time = TimeOfDay.now();
+  Color currentColor = Color.fromARGB(255, 0, 0, 0);
   List<String> _clockLetters;
 
+  /*
+   * Load the clock letters to be displayed on the main screen. 
+   * These letters are used as a preview for the actual word clock.
+   */
   Future<List<String>> _loadClockLetters() {
     return rootBundle
         .loadString('assets/clock_text.txt')
@@ -42,15 +45,10 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void changeColor(Color color) {
-    currentColor = color;
-    print(currentColor);
-  }
-
   Future<void> selectTime(BuildContext context) async {
     final TimeOfDay time = await showTimePicker(
       context: context,
-      initialTime: _time,
+      initialTime: TimeOfDay.now(),
       builder: (
         BuildContext context,
         Widget child,
@@ -62,8 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
     if (time != null) {
-      widget._setTime(time);
-      _time = time;
+      widget._setClockTime(time);
     }
   }
 
@@ -113,49 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  return AlertDialog(
-                    titlePadding: const EdgeInsets.all(0.0),
-                    contentPadding: const EdgeInsets.all(0.0),
-                    content: SingleChildScrollView(
-                        child: Column(
-                      children: <Widget>[
-                        ColorPicker(
-                          pickerColor: currentColor,
-                          onColorChanged: changeColor,
-                          colorPickerWidth: 1000.0,
-                          pickerAreaHeightPercent: 0.7,
-                          enableAlpha: true,
-                        ),
-                        Row(
-                          children: <Widget>[
-                            FlatButton(
-                              child: Text("Vorschau"),
-                              onPressed: () {
-                                setState(() {});
-                                widget._writeCharacteristic(
-                                  currentColor.red,
-                                  currentColor.green,
-                                  currentColor.blue,
-                                );
-                              },
-                            ),
-                            FlatButton(
-                              child: Text("Bestätigen"),
-                              onPressed: () {
-                                setState(() {});
-                                widget._writeCharacteristic(
-                                  currentColor.red,
-                                  currentColor.green,
-                                  currentColor.blue,
-                                );
-                                Navigator.pop(context);
-                              },
-                            )
-                          ],
-                        )
-                      ],
-                    )),
-                  );
+                  ColorPickerDialog(widget._setClockColor);
                 },
               );
             },
@@ -177,12 +132,22 @@ class _HomeScreenState extends State<HomeScreen> {
           AsyncSnapshot<List<String>> snapshot,
         ) {
           if (snapshot.hasData) {
-            return WordClock(
-              snapshot.data,
-              currentColor,
+            return new AnimatedContainer(
+              duration: Duration(seconds: 2),
+              curve: Curves.bounceIn,
+              child: WordClock(
+                snapshot.data,
+                currentColor,
+              ),
             );
           } else {
-            return new Container(); //TODO: Show loading animation
+            return new Container(
+              child: CircularProgressIndicator(
+                valueColor: new AlwaysStoppedAnimation<Color>(
+                  Colors.black,
+                ),
+              ),
+            );
           }
         },
       ),

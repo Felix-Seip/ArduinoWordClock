@@ -150,10 +150,6 @@ class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
     );
   }
 
-  void _showConnectionError() {
-    throw new UnimplementedError();
-  }
-
   void _disconnect() {
     deviceConnection?.cancel();
     _connectedDevice = null;
@@ -189,24 +185,14 @@ class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
     }
   }
 
-  void _writeDescriptor(BluetoothDescriptor d) async {
-    throw new UnimplementedError();
-    //await _connectedDevice.writeDescriptor(d, [0x12, 0x34]);
-  }
-
   void _setTime(final TimeOfDay time) {
-    String bla = "setTime(${time.hour},${time.minute})";
-    _writeCharacteristic(bla.codeUnits);
-  }
-
-  void setClockMode(final ClockMode mode) {
-    throw new UnimplementedError();
-    //_writeCharacteristic(null);
+    String timeCommand = "setTime(${time.hour},${time.minute})";
+    _writeCharacteristic(timeCommand.codeUnits);
   }
 
   void _setLEDColor(final int r, final int g, final int b) {
-    String bla = "setColor($r,$g,$b)";
-    _writeCharacteristic(bla.codeUnits);
+    String colorCommand = "setColor($r,$g,$b)";
+    _writeCharacteristic(colorCommand.codeUnits);
   }
 
   bool get isConnected => (_connectedDevice != null);
