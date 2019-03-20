@@ -22,6 +22,7 @@ The following list is the part list required to recreate this word clock:
 - 1 x 10k Ohm Resistor
 - 1 x 4.7k Ohm Resistor
 - Arduino UNO or any other microcontroller with an ATMega328P chip
+- HM-10 Bluetooth 4.0 Chip, available from DSD Tech on amazon.de
 
 ## LED Matrix Layout
 The LED matrix that is used in this project is an 11 x 11 matrix. 
