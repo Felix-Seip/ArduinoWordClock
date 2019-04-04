@@ -257,7 +257,7 @@ void showMinuteLEDs(int minutes, int &hours, bool &showUhrWord) {
 }
 
 void showLeftOverMinuteLEDs(int leftOverMinutes){
-  for(int i = 121; i < 121 + leftOverMinutes; i++){
+  for(int i = 124; i > 124 - leftOverMinutes; i--){
     leds[i] = CRGB(color[1], color[0], color[2]);
   }
 }

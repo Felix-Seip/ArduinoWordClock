@@ -110,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  ColorPickerDialog(widget._setClockColor);
+                  return ColorPickerDialog(widget._setClockColor);
                 },
               );
             },
