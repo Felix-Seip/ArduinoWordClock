@@ -11,11 +11,13 @@
 #include "ClockElement.h"
 
 #define NUM_LEDS 125
+#define HEART_LEDS 10
 #define NUM_CLOCK_ELEMENTS 19
 
 #define DATA_PIN 5
 #define pResistor A5
 #define ONE_WIRE_BUS 7
+
 
 int brightness = 255;
 // Define the array of leds
@@ -26,6 +28,7 @@ Vector<ClockElement> timeClockElements;
                                                 //   Eins, Zwei, Drei, Vier, Fünf, Sechs, Sieben, Acht, Neun, Zehn, Elf, Zwölf, Null, Fünf, Zehn, Viertel, Zwanzig, Halb
 int timeClockElementRangeFrom[NUM_CLOCK_ELEMENTS] = { 44,    51,   40,   33,   55,   22,    26,     18,   3,    0,    58,  13,  -1,   117,  106,  92,      99,      62  };
 int timeClockElementRangeTo[NUM_CLOCK_ELEMENTS]   = { 48,    55,   44,   37,   59,   27,    32,     22,   7,    4,    61,  18,  -1,   121,  110,  99,      106,     66  };
+int heartLEDs[HEART_LEDS] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
 //CRGB temperatureColors[15] = {CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB()}
 
@@ -76,6 +79,7 @@ void createClockElements()
 }
 
 void setup()
+
 {
   Serial.begin(9600);
   
@@ -94,7 +98,9 @@ int minutes = -1;
 
 String inString = "";
 
+
 void loop()
+
 {
   int colorIndex = 0;
   String command = "";
@@ -124,6 +130,14 @@ void loop()
         {
           color[colorIndex] = inString.toInt();
           colorIndex++;
+          inString = "";
+        }
+      } 
+      else if(command == "showFreya(" && !readCommand) 
+      {
+        if (nextChar == ',' || nextChar == ')')
+        {
+          showFreya();
           inString = "";
         }
       } 
@@ -158,7 +172,6 @@ void loop()
     }
     Serial.println(fullCommand);
   } 
-  
   tmElements_t tm;
   RTC.read(tm);
 
@@ -231,6 +244,8 @@ void showMinuteLEDs(int minutes, int &hours, bool &showUhrWord) {
       {
         showWordVor();
       }
+
+      
       else if (minutes >= 35 && minutes < 40)
       {
         showWordNach();
@@ -293,6 +308,20 @@ void showWordNach() {
   leds[67] = CRGB(color[1], color[0], color[2]);
   leds[68] = CRGB(color[1], color[0], color[2]);
   leds[69] = CRGB(color[1], color[0], color[2]);
+}
+
+void showWordFreya() {
+  //Light up the LEDs for the word "FREYA"
+  leds[75] = CRGB(0,255,0);
+  leds[76] = CRGB(0,255,0);
+  leds[77] = CRGB(0,255,0);
+  leds[78] = CRGB(0,255,0);
+  leds[79] = CRGB(0,255,0);
+
+  for(int i = 0; i < HEART_LEDS; i++){
+    leds[i] = CRGB(0,255,0);
+    delay(40);
+  }
 }
 
 void setColorForClockElement(ClockElement clockElement, int r, int g, int b) {
