@@ -28,9 +28,7 @@ Vector<ClockElement> timeClockElements;
                                                 //   Eins, Zwei, Drei, Vier, Fünf, Sechs, Sieben, Acht, Neun, Zehn, Elf, Zwölf, Null, Fünf, Zehn, Viertel, Zwanzig, Halb
 int timeClockElementRangeFrom[NUM_CLOCK_ELEMENTS] = { 44,    51,   40,   33,   55,   22,    26,     18,   3,    0,    58,  13,  -1,   117,  106,  92,      99,      62  };
 int timeClockElementRangeTo[NUM_CLOCK_ELEMENTS]   = { 48,    55,   44,   37,   59,   27,    32,     22,   7,    4,    61,  18,  -1,   121,  110,  99,      106,     66  };
-int heartLEDs[HEART_LEDS] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-
-//CRGB temperatureColors[15] = {CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB(), CRGB()}
+int heartLEDs[HEART_LEDS] = {38, 48, 62, 69, 83, 71, 81, 73, 58, 50 };
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
@@ -79,7 +77,6 @@ void createClockElements()
 }
 
 void setup()
-
 {
   Serial.begin(9600);
   
@@ -98,9 +95,8 @@ int minutes = -1;
 
 String inString = "";
 
-
+bool showUhrWord = true;
 void loop()
-
 {
   int colorIndex = 0;
   String command = "";
@@ -137,7 +133,7 @@ void loop()
       {
         if (nextChar == ',' || nextChar == ')')
         {
-          showFreya();
+          showWordFreya();
           inString = "";
         }
       } 
@@ -178,31 +174,17 @@ void loop()
   int minutes = tm.Minute;
   int hours = tm.Hour;
 
-  bool showUhrWord = true;
-
   resetAllLEDs();
   showBasicClockElements();
   showMinuteLEDs(minutes, hours, showUhrWord);
   showHourLEDs(hours);
-  tempToRGB();
-
+  
   if (showUhrWord)
   {
     //Light up the LEDs for the word "UHR"
     leds[8] = CRGB(color[1], color[0], color[2]);
     leds[9] = CRGB(color[1], color[0], color[2]);
     leds[10] = CRGB(color[1], color[0], color[2]);
-  }
-
-  // TODO: Read the light sensor to set the brightness
-  int photoResistorValue = analogRead(pResistor);
-  
-  if(photoResistorValue >= 800){
-    brightness = 255;
-  } else if (photoResistorValue < 800 && photoResistorValue >= 700){
-    brightness = 150;
-  } else if (photoResistorValue < 700 && photoResistorValue >= 500){
-    brightness = 50;
   }
   
   FastLED.setBrightness(brightness);
@@ -311,6 +293,7 @@ void showWordNach() {
 }
 
 void showWordFreya() {
+  showUhrWord = false;
   //Light up the LEDs for the word "FREYA"
   leds[75] = CRGB(0,255,0);
   leds[76] = CRGB(0,255,0);
@@ -319,9 +302,10 @@ void showWordFreya() {
   leds[79] = CRGB(0,255,0);
 
   for(int i = 0; i < HEART_LEDS; i++){
-    leds[i] = CRGB(0,255,0);
-    delay(40);
+    leds[heartLEDs[i]] = CRGB(0,255,0);
+    FastLED.delay(300);
   }
+  showUhrWord = true;
 }
 
 void setColorForClockElement(ClockElement clockElement, int r, int g, int b) {

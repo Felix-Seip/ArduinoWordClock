@@ -1,50 +1,11 @@
 import 'package:flutter/material.dart';
 import 'clock_element.dart';
+import 'dart:async';
+import 'package:flutter/services.dart' show rootBundle;
 
 class WordClock extends StatefulWidget {
   List<String> _clockLetters = [];
-  Color _currentColor = const Color.fromARGB(255, 0, 0, 0);
-  final List<int> elementPositionsFrom = [
-    66, //Eins
-    73, //Zwei
-    40, //Drei
-    33, //Vier
-    55, //Fünf
-    22, //Sechs
-    26, //Sieben
-    18, //Acht
-    3, //Neun
-    0, //Zehn
-    58, //Elf
-    13, //Zwölf
-    -1, //Null
-    117, //Fünf
-    106, //Zehn
-    92, //Viertel
-    99, //Zwanzig
-    62 //Halb
-  ];
-
-  final List<int> elementPositionsTo = [
-    69, //Eins
-    76, //Zwei
-    40, //Drei
-    33, //Vier
-    55, //Fünf
-    22, //Sechs
-    26, //Sieben
-    18, //Acht
-    3, //Neun
-    0, //Zehn
-    58, //Elf
-    13, //Zwölf
-    -1, //Null
-    117, //Fünf
-    106, //Zehn
-    92, //Viertel
-    99, //Zwanzig
-    62 //Halb
-  ];
+  Color _currentColor = const Color.fromARGB(255, 0, 0, 255);
 
   WordClock(this._clockLetters, this._currentColor);
 
@@ -55,30 +16,162 @@ class WordClock extends StatefulWidget {
 class _WordClockState extends State<WordClock> {
   Color _defaultColor = Color.fromARGB(255, 0, 0, 0);
   List<ClockElement> _clockElements;
+  Map<int, MapEntry<int, int>> _wordDefintions;
 
-  /*void setUpClockElements() {
-    for (int i = 1; i <= 12; i++) {
-      List<int> numericValues = [];
-      numericValues[0] = i;
+  Future<Map<int, MapEntry<int, int>>> _loadClockLetterIndices() {
+    Map<int, MapEntry<int, int>> retVal = Map();
+    return rootBundle
+        .loadString('assets/clock_element_indices.txt')
+        .then((String contents) {
+      List<String> wordDefinitions = contents.split("\n");
+      for (String wordDefinition in wordDefinitions) {
+        List<String> index = wordDefinition.split(":");
+        int wordIndex = int.parse(index[0]);
+        int wordIndexFrom = int.parse(index[1].split(",")[0]);
+        int wordIndexTo = int.parse(index[1].split(",")[1]);
 
-      if (i + 12 == 24) {
-        numericValues[1] = 0;
-      } else {
-        numericValues[1] = i + 12;
+        retVal[wordIndex] = MapEntry(wordIndexFrom, wordIndexTo);
       }
 
-      _clockElements.add(
-        ClockElement(_text, _defaultColor, widget.elementPositionsFrom[i - 1],
-            widget.elementPositionsTo[i - 1], numericValues, ElementType.HOUR),
-      );
-    }
-  }*/
+      return retVal;
+    });
+  }
 
   @override
   void initState() {
-    //setUpClockElements();
     _setup();
     super.initState();
+  }
+
+  int _currentHour = -1;
+
+  void _showTime(final TimeOfDay currentTime) {
+    print(currentTime);
+
+    for (int i = 0; i < _clockElements.length; i++) {
+      _clockElements[i].setColor(Colors.black);
+    }
+
+    for (MapEntry<int, MapEntry<int, int>> entry in _wordDefintions.entries) {
+      int hour =
+          currentTime.hour <= 12 ? currentTime.hour : currentTime.hour - 12;
+      hour = 5;
+      int minute = 10; //currentTime.minute
+
+      if (entry.key == -1 || entry.key == -2) {
+        for (int i = entry.value.key; i <= entry.value.value; i++) {
+          _clockElements[i].setColor(Colors.red);
+        }
+      }
+
+      if (minute == 0 && entry.key == -6) {
+        for (int i = entry.value.key; i <= entry.value.value; i++) {
+          _clockElements[i].setColor(Colors.red);
+        }
+      }
+
+      if (hour == entry.key) {
+        for (int i = entry.value.key; i <= entry.value.value; i++) {
+          _clockElements[i].setColor(Colors.red);
+        }
+      }
+
+      if (minute == 30 && entry.key == -5) {
+        for (int i = entry.value.key; i <= entry.value.value; i++) {
+          _clockElements[i].setColor(Colors.red);
+        }
+      }
+
+      if (((minute >= 20 && minute < 25) || (minute >= 40 && minute < 55)) &&
+          entry.key == 20) {
+        if (60 - minute > 35) {
+          for (int i = _wordDefintions[-4].key;
+              i <= _wordDefintions[-4].value;
+              i++) {
+            _clockElements[i].setColor(Colors.red);
+          }
+        } else {
+          for (int i = _wordDefintions[-3].key;
+              i <= _wordDefintions[-3].value;
+              i++) {
+            _clockElements[i].setColor(Colors.red);
+          }
+        }
+        for (int i = entry.value.key; i <= entry.value.value; i++) {
+          _clockElements[i].setColor(Colors.red);
+        }
+      }
+
+      if (((minute >= 15 && minute < 20) || (minute >= 45 && minute < 50)) &&
+          entry.key == 15) {
+        if (60 - minute > 35) {
+          for (int i = _wordDefintions[-4].key;
+              i <= _wordDefintions[-4].value;
+              i++) {
+            _clockElements[i].setColor(Colors.red);
+          }
+        } else {
+          for (int i = _wordDefintions[-3].key;
+              i <= _wordDefintions[-3].value;
+              i++) {
+            _clockElements[i].setColor(Colors.red);
+          }
+        }
+        for (int i = entry.value.key; i <= entry.value.value; i++) {
+          _clockElements[i].setColor(Colors.red);
+        }
+      }
+
+      if ((minute >= 10 || minute >= 50) && entry.key == 10) {
+        if (60 - minute > 35) {
+          for (int i = _wordDefintions[-4].key;
+              i <= _wordDefintions[-4].value;
+              i++) {
+            _clockElements[i].setColor(Colors.red);
+          }
+        } else {
+          for (int i = _wordDefintions[-3].key;
+              i <= _wordDefintions[-3].value;
+              i++) {
+            _clockElements[i].setColor(Colors.red);
+          }
+        }
+        for (int i = entry.value.key; i <= entry.value.value; i++) {
+          _clockElements[i].setColor(Colors.red);
+        }
+      }
+
+      if ((minute == 5 || minute == 55) && entry.key == 5) {
+        if (60 - minute > 35) {
+          for (int i = _wordDefintions[-4].key;
+              i <= _wordDefintions[-4].value;
+              i++) {
+            _clockElements[i].setColor(Colors.red);
+          }
+        } else {
+          for (int i = _wordDefintions[-3].key;
+              i <= _wordDefintions[-3].value;
+              i++) {
+            _clockElements[i].setColor(Colors.red);
+          }
+        }
+        for (int i = entry.value.key; i <= entry.value.value; i++) {
+          _clockElements[i].setColor(Colors.red);
+        }
+      }
+    }
+  }
+
+  void _checkTime() {
+    Timer(
+      Duration(seconds: 1),
+      () {
+        _showTime(
+          TimeOfDay.now(),
+        );
+        _checkTime();
+      },
+    );
   }
 
   void _setup() {
@@ -90,14 +183,18 @@ class _WordClockState extends State<WordClock> {
               ),
         )
         .toList();
+    _loadClockLetterIndices().then((value) {
+      _wordDefintions = value;
+      _checkTime();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    _setup();
     return Padding(
       padding: EdgeInsets.all(50),
       child: GridView.count(
+        physics: const NeverScrollableScrollPhysics(),
         crossAxisCount: 11,
         children: _clockElements,
       ),

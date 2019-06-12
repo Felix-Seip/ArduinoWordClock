@@ -47,7 +47,8 @@ class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
         accentColor: Color.fromARGB(255, 94, 80, 63),
       ),
       home: Scaffold(
-        body: _connectedDevice == null && !_isPastSplashScreen
+        //
+        body: _connectedDevice == null
             ? SplashScreen(_scanDevices)
             : HomeScreen(
                 _flutterBlue,
@@ -56,6 +57,8 @@ class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
                 _disconnect,
                 _setLEDColor,
                 _setTime,
+                _showFreya,
+                _changeBrightness,
               ),
       ),
     );
@@ -193,6 +196,16 @@ class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
   void _setLEDColor(final int r, final int g, final int b) {
     String colorCommand = "setColor($r,$g,$b)";
     _writeCharacteristic(colorCommand.codeUnits);
+  }
+
+  void _showFreya() {
+    String freyaCommand = "showFreya()";
+    _writeCharacteristic(freyaCommand.codeUnits);
+  }
+
+  void _changeBrightness(final double brightness) {
+    String brightnessCommand = "changeBrightness($brightness)";
+    _writeCharacteristic(brightnessCommand.codeUnits);
   }
 
   bool get isConnected => (_connectedDevice != null);

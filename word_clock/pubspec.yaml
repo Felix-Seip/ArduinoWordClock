@@ -49,6 +49,7 @@ flutter:
   assets:
    - assets/logo.png
    - assets/clock_text.txt
+   - assets/clock_element_indices.txt
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.io/assets-and-images/#resolution-aware.

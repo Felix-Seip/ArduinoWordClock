@@ -10,11 +10,10 @@ class ClockElement extends StatefulWidget {
   Color _color;
   List<int> _numericValues = [];
   ElementType _elementType;
-  int _rangeFrom;
-  int _rangeTo;
+  _ClockElementState _state;
 
   ClockElement(this._text, this._color,
-      [this._rangeFrom, this._rangeTo, this._numericValues, this._elementType]);
+      [this._numericValues, this._elementType]);
 
   int getNumericValuesAtIndex(int index) {
     return _numericValues[index];
@@ -24,17 +23,44 @@ class ClockElement extends StatefulWidget {
     return _elementType;
   }
 
+  void setColor(final Color color) {
+    _color = color;
+    if (_state != null) {
+      _state.setColor();
+    }
+  }
+
+  String getText() {
+    return _text;
+  }
+
   @override
-  _ClockElementState createState() => _ClockElementState();
+  _ClockElementState createState() {
+    _state = _ClockElementState();
+    return _state;
+  }
 }
 
 class _ClockElementState extends State<ClockElement> {
+  void setColor() {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Text(
-      widget._text,
-      style: TextStyle(
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
         color: widget._color,
+      ),
+      child: Container(
+        alignment: Alignment.center,
+        child: Text(
+          widget._text,
+          style: TextStyle(
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }
