@@ -35,7 +35,7 @@ class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
   @override
   void afterFirstLayout(BuildContext context) {
     // Calling the same function "after layout" to resolve the issue.
-    _scanDevices();
+    //_scanDevices();
   }
 
   // This widget is the root of your application.
@@ -47,19 +47,19 @@ class _MyApp extends State<MyApp> with AfterLayoutMixin<MyApp> {
         accentColor: Color.fromARGB(255, 94, 80, 63),
       ),
       home: Scaffold(
-        //
-        body: _connectedDevice == null
-            ? SplashScreen(_scanDevices)
-            : HomeScreen(
-                _flutterBlue,
-                _connectedDevice,
-                _scanDevices,
-                _disconnect,
-                _setLEDColor,
-                _setTime,
-                _showFreya,
-                _changeBrightness,
-              ),
+        //_connectedDevice == null
+        body:
+            //? SplashScreen(_scanDevices)
+            HomeScreen(
+          _flutterBlue,
+          _connectedDevice,
+          _scanDevices,
+          _disconnect,
+          _setLEDColor,
+          _setTime,
+          _showFreya,
+          _changeBrightness,
+        ),
       ),
     );
   }

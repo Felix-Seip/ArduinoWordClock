@@ -39,8 +39,8 @@ class _WordClockState extends State<WordClock> {
 
   @override
   void initState() {
-    _setup();
     super.initState();
+    _setup();
   }
 
   int _currentHour = -1;
@@ -55,8 +55,8 @@ class _WordClockState extends State<WordClock> {
     for (MapEntry<int, MapEntry<int, int>> entry in _wordDefintions.entries) {
       int hour =
           currentTime.hour <= 12 ? currentTime.hour : currentTime.hour - 12;
-      hour = 5;
-      int minute = 10; //currentTime.minute
+
+      int minute = currentTime.minute;
 
       if (entry.key == -1 || entry.key == -2) {
         for (int i = entry.value.key; i <= entry.value.value; i++) {
@@ -166,9 +166,11 @@ class _WordClockState extends State<WordClock> {
     Timer(
       Duration(seconds: 1),
       () {
-        _showTime(
-          TimeOfDay.now(),
-        );
+        _showTime(TimeOfDay(
+          hour: 3,
+          minute: 40,
+        ) // 3:00pm
+            );
         _checkTime();
       },
     );

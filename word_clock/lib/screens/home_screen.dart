@@ -215,36 +215,40 @@ class _HomeScreenState extends State<HomeScreen> {
         future: _loadClockLetters(), // a Future<String> or null
         builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
           if (snapshot.hasData) {
-            return AnimatedContainer(
-                duration: Duration(seconds: 2),
-                curve: Curves.bounceIn,
-                child: Row(
-                  children: <Widget>[
-                    GestureDetector(
-                      onTap: () {
-                        _tapCount++;
-                        Timer(
-                          Duration(milliseconds: 500),
-                          () {
+            return Column(
+              children: <Widget>[
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      if (_tapCount == 1) {
+                        Timer(Duration(seconds: 10), () {
+                          if (!(_tapCount >= 10)) {
                             _tapCount = 1;
-                          },
-                        );
-
-                        if (_tapCount == 10) {
-                          widget._showFreya();
-                          _tapCount = 1;
-                        }
-                      },
-                      child: WordClock(
-                        snapshot.data,
-                        currentColor,
-                      ),
+                          }
+                        });
+                      }
+                      _tapCount++;
+                      if (_tapCount == 10) {
+                        print("show freya");
+                        widget._showFreya();
+                        _tapCount = 1;
+                      }
+                    },
+                    child: WordClock(
+                      snapshot.data,
+                      currentColor,
                     ),
-                    Expanded(
-                      child: Slider(
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(bottom: 100, left: 40, right: 40),
+                  child: Column(
+                    children: <Widget>[
+                      Slider(
                         activeColor: Colors.indigoAccent,
                         min: 10.0,
                         max: 255.0,
+                        label: "Set brightness",
                         onChanged: (newValue) {
                           setState(() {
                             _sliderValue = newValue;
@@ -255,9 +259,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                         value: _sliderValue,
                       ),
-                    ),
-                  ],
-                ));
+                    ],
+                  ),
+                ),
+              ],
+            );
           } else {
             return new Container(
               child: CircularProgressIndicator(

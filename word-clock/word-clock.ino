@@ -30,9 +30,6 @@ int timeClockElementRangeFrom[NUM_CLOCK_ELEMENTS] = { 44,    51,   40,   33,   5
 int timeClockElementRangeTo[NUM_CLOCK_ELEMENTS]   = { 48,    55,   44,   37,   59,   27,    32,     22,   7,    4,    61,  18,  -1,   121,  110,  99,      106,     66  };
 int heartLEDs[HEART_LEDS] = {38, 48, 62, 69, 83, 71, 81, 73, 58, 50 };
 
-OneWire oneWire(ONE_WIRE_BUS);
-DallasTemperature sensors(&oneWire);
-
 void createClockElements()
 {
   //Create the ClockElements for the hours
@@ -79,12 +76,6 @@ void createClockElements()
 void setup()
 {
   Serial.begin(9600);
-  
-  pinMode(pResistor, INPUT);
-  
-  sensors.begin();
-  Wire.begin();
-  
   FastLED.addLeds<WS2812B, DATA_PIN>(leds, NUM_LEDS);
   createClockElements();
 }
@@ -191,16 +182,6 @@ void loop()
   FastLED.show();
 }
 
-void tempToRGB() {
-  sensors.requestTemperatures(); 
-  sensors.getTempCByIndex(0);
-  if(sensors.getTempCByIndex(0) > 26){
-    leds[11] = CRGB(0, 255, 0);  
-    return;
-  }
-  leds[11] = CRGB(0, 0, 255);
-}
-
 void showHourLEDs(int &hours) {
   ClockElement clockElement = findClockElementByNumericValueAndType(hours, HOUR);
   setColorForClockElement(clockElement, color[1], color[0], color[2]);
@@ -303,7 +284,13 @@ void showWordFreya() {
 
   for(int i = 0; i < HEART_LEDS; i++){
     leds[heartLEDs[i]] = CRGB(0,255,0);
-    FastLED.delay(300);
+    FastLED.delay(150);
+  }
+  delay(150);
+  
+  for(int i = 0; i < HEART_LEDS; i++){
+    leds[heartLEDs[i]] = CRGB(0,0,0);
+    FastLED.delay(150);
   }
   showUhrWord = true;
 }
