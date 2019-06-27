@@ -1,28 +1,29 @@
 #include "ClockElement.h"
+#include "arduino.h"
 
 ClockElement::ClockElement(){ }
 
 ClockElement::ClockElement(int *numericValues, int from, int to, CLOCK_ELEMENT_TYPE type){
-  this->_numericValues = numericValues;
-  this->_from = from;
-  this->_to = to;
-  this->_type = type;
+  _numericValues = numericValues;
+  _from = from;
+  _to = to;
+  _type = type;
 }
 
 int ClockElement::GetRangeFrom(){
-  return this->_from;  
+  return _from;  
 }
 
 int ClockElement::GetRangeTo(){
-  return this->_to;  
+  return _to;  
 }
 
 int ClockElement::GetNumericValueAtIndex(int index) {
-  return this->_numericValues[index];
+  return _numericValues[index];
 }
 
 int ClockElement::GetNumericValuesArrayLength() {
-  return (sizeof(this->_numericValues) / sizeof(*(this->_numericValues)));
+  return _to - _from;
 }
 
 CLOCK_ELEMENT_TYPE ClockElement::GetClockElementType(){

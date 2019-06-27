@@ -32,7 +32,7 @@ WiFiClient client;
 char ssid[] = "Seip"; //Needs to be configurable
 char pass[] = "connect.me"; //Needs to be configurable
 
-Vector<ClockElement> timeClockElements;
+ClockElement timeClockElements[NUM_CLOCK_ELEMENTS];
 
                                                 //   Eins, Zwei, Drei, Vier, Fünf, Sechs, Sieben, Acht, Neun, Zehn, Elf, Zwölf, Null, Fünf, Zehn, Viertel, Zwanzig, Halb
 int timeClockElementRangeFrom[NUM_CLOCK_ELEMENTS] = { 44,    51,   40,   33,   55,   22,    26,     18,   3,    0,    58,  13,  -1,   117,  106,  92,      99,      62  };
@@ -42,9 +42,6 @@ int heartLEDs[HEART_LEDS] = {38, 48, 62, 69, 83, 71, 81, 73, 58, 50 };
 void createClockElements()
 {
   Serial.println("Creating Clock Elements");
-  //Create the ClockElements for the hours
-  ClockElement storage_array1[NUM_CLOCK_ELEMENTS];
-  timeClockElements.setStorage(storage_array1);
 
   for (int i = 1; i <= 12; i++)
   {
@@ -57,7 +54,7 @@ void createClockElements()
       numericValues[1] = 0;
     }
 
-    timeClockElements.push_back(ClockElement(numericValues, timeClockElementRangeFrom[i - 1], timeClockElementRangeTo[i - 1], HOUR));
+    timeClockElements[i] = ClockElement(numericValues, timeClockElementRangeFrom[i - 1], timeClockElementRangeTo[i - 1], HOUR);
   }
 
   //Create the ClockElements for the minutes
@@ -73,8 +70,8 @@ void createClockElements()
       rangeIndex--;
     }
 
-    timeClockElements.push_back(ClockElement(numericValues, timeClockElementRangeFrom[rangeIndex], timeClockElementRangeTo[rangeIndex], MINUTE));
-
+    timeClockElements[rangeIndex] = ClockElement(numericValues, timeClockElementRangeFrom[rangeIndex], timeClockElementRangeTo[rangeIndex], MINUTE);
+    
     rangeIndex++;
     minuteDistance -= 10;
   }
@@ -88,14 +85,14 @@ void setup()
   rest.variable("room_name", &ROOM_NAME);
   
   // Function to be exposed
-  rest.function("wordclockcolor", setPixelColor);
-  rest.function("wordclocktime", getWifiTime);
+  rest.function("clockcolor", setPixelColor);
+  rest.function("clocktime", getWifiTime);
+  rest.function("clockwifi", beginWifiServer);
+    
   rest.function("wordclockfreya", showFreya);
 
-  rest.function("wordclockwifi", beginWifiServer);
-
   //Opposite of beginAP is WiFi.begin
-  status = WiFi.begin(ssid, pass);
+  status = WiFi.beginAP(ssid, pass);
   
   server.begin();
   // you're connected now, so print out the status:
@@ -130,9 +127,7 @@ void handleClockFunctions() {
   resetAllLEDs();
   showBasicClockElements();
   showMinuteLEDs(minutes, hours, showUhrWord);
-  delay(500);
-  //showHourLEDs(hours);
-  delay(500);
+  showHourLEDs(hours);
     
   if (showUhrWord)
   {
@@ -142,7 +137,6 @@ void handleClockFunctions() {
     leds[10] = CRGB(color[1], color[0], color[2]);
   }
 
-  Serial.print("Success");
   FastLED.setBrightness(brightness);
   FastLED.show();
 }
@@ -313,14 +307,9 @@ void setColorForClockElement(ClockElement clockElement, int r, int g, int b) {
 ClockElement findClockElementByNumericValueAndType(int numericValue, CLOCK_ELEMENT_TYPE elementType) {
   ClockElement *foundElement = NULL;
 
-  for (int i = 0; i <= timeClockElements.size(); i++)
+  for (int i = 0; i < NUM_CLOCK_ELEMENTS; i++)
   {
     ClockElement clockElement = timeClockElements[i];
-    Serial.print("Current Clock Element Index: ");
-    Serial.println(i);
-    Serial.print("Clock Element Values Array Length: ");
-    Serial.println(clockElement.GetNumericValuesArrayLength());
-    Serial.println("\n");
     
     for (int j = 0; j < clockElement.GetNumericValuesArrayLength(); j++)
     {
