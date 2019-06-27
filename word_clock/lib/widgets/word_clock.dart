@@ -6,15 +6,15 @@ import 'package:flutter/services.dart' show rootBundle;
 class WordClock extends StatefulWidget {
   List<String> _clockLetters = [];
   Color _currentColor = const Color.fromARGB(255, 0, 0, 255);
+  bool _animate;
 
-  WordClock(this._clockLetters, this._currentColor);
+  WordClock(this._clockLetters, this._currentColor, this._animate);
 
   @override
   _WordClockState createState() => _WordClockState();
 }
 
 class _WordClockState extends State<WordClock> {
-  Color _defaultColor = Color.fromARGB(255, 0, 0, 0);
   List<ClockElement> _clockElements;
   Map<int, MapEntry<int, int>> _wordDefintions;
 
@@ -42,8 +42,6 @@ class _WordClockState extends State<WordClock> {
     super.initState();
     _setup();
   }
-
-  int _currentHour = -1;
 
   void _showTime(final TimeOfDay currentTime) {
     print(currentTime);
@@ -185,10 +183,12 @@ class _WordClockState extends State<WordClock> {
               ),
         )
         .toList();
-    _loadClockLetterIndices().then((value) {
-      _wordDefintions = value;
-      _checkTime();
-    });
+    if (widget._animate) {
+      _loadClockLetterIndices().then((value) {
+        _wordDefintions = value;
+        _checkTime();
+      });
+    }
   }
 
   @override

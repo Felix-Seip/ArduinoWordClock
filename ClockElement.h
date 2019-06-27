@@ -7,7 +7,7 @@ enum CLOCK_ELEMENT_TYPE{
 class ClockElement {
   public:
     ClockElement();
-    ClockElement(int *numericValues, int from, int to, CLOCK_ELEMENT_TYPE type);
+    ClockElement(int *numericValues, int from, int rangeTo, CLOCK_ELEMENT_TYPE type);
     int GetRangeFrom();
     int GetRangeTo();
     int GetNumericValueAtIndex(int index);
@@ -19,4 +19,5 @@ class ClockElement {
     int *_numericValues;
     int _from;
     int _to;
+    int _range;
 }; 

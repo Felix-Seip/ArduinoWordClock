@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/block_picker.dart';
 
 class ColorPickerDialog extends StatefulWidget {
-  final Function _writeCharacteristic;
+  final Function _changeClockColor;
 
-  ColorPickerDialog(this._writeCharacteristic);
+  ColorPickerDialog(this._changeClockColor);
 
   @override
   _ColorPickerDialogState createState() => _ColorPickerDialogState();
@@ -14,7 +14,7 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
   Color currentColor = Colors.black;
 
   void changeColor(Color color) {
-    widget._writeCharacteristic(
+    widget._changeClockColor(
       color.red,
       color.green,
       color.blue,

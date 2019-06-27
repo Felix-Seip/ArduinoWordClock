@@ -19,6 +19,9 @@ dependencies:
   after_layout: ^1.0.7
   flutter_colorpicker: any
   flushbar: ^1.3.0
+  ping_discover_network: ^0.1.2
+  wifi: ^0.1.5
+  http: ^0.12.0+2
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -50,6 +53,7 @@ flutter:
    - assets/logo.png
    - assets/clock_text.txt
    - assets/clock_element_indices.txt
+   - assets/word-clock.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.io/assets-and-images/#resolution-aware.

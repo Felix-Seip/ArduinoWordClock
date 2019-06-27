@@ -1,12 +1,12 @@
 #include <OneWire.h>
-#include <DallasTemperature.h>
 #include <Vector.h>
-
 #include <Wire.h>
 #include <TimeLib.h>
-#include <DS1307RTC.h>
-
 #include <FastLED.h>
+#include <SPI.h>
+#include <WiFiNINA.h>
+#include <FastLED.h>
+#include <aREST.h>
 
 #include "ClockElement.h"
 
@@ -18,10 +18,19 @@
 #define pResistor A5
 #define ONE_WIRE_BUS 7
 
-
+aREST rest = aREST();
 int brightness = 255;
 // Define the array of leds
 CRGB leds[NUM_LEDS];
+String CLOCK_TYPE = "word-clock";
+String ROOM_NAME = "Wohnzimmer"; //Needs to be configurable
+int status = WL_IDLE_STATUS;
+
+WiFiServer server(80);
+WiFiClient client;
+
+char ssid[] = "Seip"; //Needs to be configurable
+char pass[] = "connect.me"; //Needs to be configurable
 
 Vector<ClockElement> timeClockElements;
 
@@ -32,6 +41,7 @@ int heartLEDs[HEART_LEDS] = {38, 48, 62, 69, 83, 71, 81, 73, 58, 50 };
 
 void createClockElements()
 {
+  Serial.println("Creating Clock Elements");
   //Create the ClockElements for the hours
   ClockElement storage_array1[NUM_CLOCK_ELEMENTS];
   timeClockElements.setStorage(storage_array1);
@@ -40,14 +50,11 @@ void createClockElements()
   {
     int *numericValues = new int[2];
     numericValues[0] = i;
-
+    numericValues[1] = i + 12;
+    
     if (i + 12 == 24)
     {
       numericValues[1] = 0;
-    }
-    else
-    {
-      numericValues[1] = i + 12;
     }
 
     timeClockElements.push_back(ClockElement(numericValues, timeClockElementRangeFrom[i - 1], timeClockElementRangeTo[i - 1], HOUR));
@@ -76,100 +83,57 @@ void createClockElements()
 void setup()
 {
   Serial.begin(9600);
+
+  rest.variable("type", &CLOCK_TYPE);
+  rest.variable("room_name", &ROOM_NAME);
+  
+  // Function to be exposed
+  rest.function("wordclockcolor", setPixelColor);
+  rest.function("wordclocktime", getWifiTime);
+  rest.function("wordclockfreya", showFreya);
+
+  rest.function("wordclockwifi", beginWifiServer);
+
+  //Opposite of beginAP is WiFi.begin
+  status = WiFi.begin(ssid, pass);
+  
+  server.begin();
+  // you're connected now, so print out the status:
+  // printWifiStatus();
+
   FastLED.addLeds<WS2812B, DATA_PIN>(leds, NUM_LEDS);
   createClockElements();
 }
 
 char color[3] = {255, 255, 255};
-int hours = -1;
-int minutes = -1;
-
-String inString = "";
+int currentHour = 10;
+int currentMinute = 45;
 
 bool showUhrWord = true;
 void loop()
-{
-  int colorIndex = 0;
-  String command = "";
-  String fullCommand = "";
-  bool readCommand = true;
-  bool isHour = true;
-  if(Serial.available() > 0) {
-    while(Serial.available() > 0){
-      char nextChar = Serial.read();
-      fullCommand += nextChar;
-      if(readCommand){
-        if(!isDigit(nextChar)){
-          command += nextChar;
-        } else {
-          readCommand = false;
-        }
-      } 
+{  
+  String clientRequest = "";
+  client = server.available();   // listen for incoming clients
+  getIPTime();
+  handleClockFunctions();
+    
+  while (client.connected()) {
+    rest.handle(client);
+    handleClockFunctions();
+  }
+  client.stop();
+}
 
-      if(command == "setColor(" && !readCommand) 
-      {
-        //Set the color
-        if(isDigit(nextChar))
-        {
-          inString += nextChar;
-        }
-        else if (nextChar == ',' || nextChar == ')')
-        {
-          color[colorIndex] = inString.toInt();
-          colorIndex++;
-          inString = "";
-        }
-      } 
-      else if(command == "showFreya(" && !readCommand) 
-      {
-        if (nextChar == ',' || nextChar == ')')
-        {
-          showWordFreya();
-          inString = "";
-        }
-      } 
-      else if(command == "setTime(")
-      {
-        //Set the time
-        if(isDigit(nextChar))
-        {
-          inString += nextChar;
-        }
-        else if (nextChar == ',' || nextChar == ')')
-        {
-          if(isHour)
-          {
-            hours = inString.toInt();
-            isHour = false;
-          } 
-          else 
-          {
-            minutes = inString.toInt();
-          }
-          inString = "";
-        }
-
-        if(!isHour){
-          tmElements_t tim_e;
-          tim_e.Hour = hours;
-          tim_e.Minute = minutes;
-          RTC.write(tim_e);
-        }
-      }
-    }
-    Serial.println(fullCommand);
-  } 
-  tmElements_t tm;
-  RTC.read(tm);
-
-  int minutes = tm.Minute;
-  int hours = tm.Hour;
-
+void handleClockFunctions() {
+  int minutes = 45;
+  int hours = 10;
   resetAllLEDs();
   showBasicClockElements();
   showMinuteLEDs(minutes, hours, showUhrWord);
-  showHourLEDs(hours);
-  
+  delay(500);
+  //showHourLEDs(hours);
+  delay(500);
+    
   if (showUhrWord)
   {
     //Light up the LEDs for the word "UHR"
@@ -177,9 +141,53 @@ void loop()
     leds[9] = CRGB(color[1], color[0], color[2]);
     leds[10] = CRGB(color[1], color[0], color[2]);
   }
-  
+
+  Serial.print("Success");
   FastLED.setBrightness(brightness);
   FastLED.show();
+}
+
+void getIPTime() {
+    unsigned long epoch = 1561488487 + 7200;
+    currentHour = ((epoch  % 86400L) / 3600);
+    currentMinute = (epoch  % 3600) / 60;  
+}
+
+int beginWifiServer(String command) {
+  WiFi.end();
+  WiFi.begin("Honor 7X", "connect.me");
+  server.begin();
+  return 1;
+}
+
+int showFreya(String command) {
+  showWordFreya();
+}
+
+int getWifiTime(String command) {
+  return WiFi.getTime();
+}
+
+//http://192.168.4.1/rgb?param=1,2,3
+int setPixelColor(String rgb) {
+  int colors[3] = {255, 255, 0};
+
+  int beginningIndex = 0;
+  int colorIndex = 0;
+  while(rgb.indexOf(",", beginningIndex) != -1){
+    int index = rgb.indexOf(",", beginningIndex);
+    colors[colorIndex] = rgb.substring(beginningIndex, index).toInt();
+    beginningIndex = index + 1;
+    colorIndex++;
+  }
+  colors[colorIndex] = rgb.substring(beginningIndex, rgb.length()).toInt();
+
+  for(int i = 0; i < NUM_LEDS; i++){
+    leds[i] = CRGB(colors[1], colors[0], colors[2]);
+  }
+  FastLED.show();
+  // set single pixel color
+  return 1;
 }
 
 void showHourLEDs(int &hours) {
@@ -305,10 +313,16 @@ void setColorForClockElement(ClockElement clockElement, int r, int g, int b) {
 ClockElement findClockElementByNumericValueAndType(int numericValue, CLOCK_ELEMENT_TYPE elementType) {
   ClockElement *foundElement = NULL;
 
-  for (int i = 0; i < timeClockElements.size(); i++)
+  for (int i = 0; i <= timeClockElements.size(); i++)
   {
     ClockElement clockElement = timeClockElements[i];
-    for (int j = 0; j <= clockElement.GetNumericValuesArrayLength(); j++)
+    Serial.print("Current Clock Element Index: ");
+    Serial.println(i);
+    Serial.print("Clock Element Values Array Length: ");
+    Serial.println(clockElement.GetNumericValuesArrayLength());
+    Serial.println("\n");
+    
+    for (int j = 0; j < clockElement.GetNumericValuesArrayLength(); j++)
     {
       if(elementType == MINUTE && clockElement.GetClockElementType() == MINUTE){
         if (numericValue >= clockElement.GetNumericValueAtIndex(j) && numericValue < (clockElement.GetNumericValueAtIndex(j) + 5))
