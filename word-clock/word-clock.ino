@@ -92,7 +92,7 @@ void setup()
   rest.function("wordclockfreya", showFreya);
 
   //Opposite of beginAP is WiFi.begin
-  status = WiFi.beginAP(ssid, pass);
+  status = WiFi.begin(ssid, pass);
   
   server.begin();
   // you're connected now, so print out the status:
@@ -103,8 +103,8 @@ void setup()
 }
 
 char color[3] = {255, 255, 255};
-int currentHour = 10;
-int currentMinute = 45;
+int currentHour = 0;
+int currentMinute = 0;
 
 bool showUhrWord = true;
 void loop()
@@ -164,21 +164,17 @@ int getWifiTime(String command) {
 
 //http://192.168.4.1/rgb?param=1,2,3
 int setPixelColor(String rgb) {
-  int colors[3] = {255, 255, 0};
-
   int beginningIndex = 0;
   int colorIndex = 0;
   while(rgb.indexOf(",", beginningIndex) != -1){
     int index = rgb.indexOf(",", beginningIndex);
-    colors[colorIndex] = rgb.substring(beginningIndex, index).toInt();
+    Serial.println(rgb.substring(beginningIndex, index));
+    color[colorIndex] = rgb.substring(beginningIndex, index).toInt();
     beginningIndex = index + 1;
     colorIndex++;
   }
-  colors[colorIndex] = rgb.substring(beginningIndex, rgb.length()).toInt();
+  color[colorIndex] = rgb.substring(beginningIndex, rgb.length()).toInt();
 
-  for(int i = 0; i < NUM_LEDS; i++){
-    leds[i] = CRGB(colors[1], colors[0], colors[2]);
-  }
   FastLED.show();
   // set single pixel color
   return 1;

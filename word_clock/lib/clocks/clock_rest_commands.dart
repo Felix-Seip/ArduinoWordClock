@@ -8,11 +8,10 @@ abstract class ClockRestCommands {
   String ip;
   http.Client client;
 
-  @protected
   void sendClockCommand(final String restPath, final String param) async {
     try {
       final response =
-          await client.get(Uri.parse('http://$ip/$restPath/?param=$param'));
+          await client.get(Uri.parse('http://$ip/$restPath?param=$param'));
 
       switch (response.statusCode) {
         case 200:
