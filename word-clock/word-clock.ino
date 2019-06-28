@@ -35,7 +35,7 @@ WiFiServer server(80);
 WiFiClient client;
 WiFiUDP udp;
 
-char ssid[] = "Honor 7X"; //Needs to be configurable
+char ssid[] = "Seip"; //Needs to be configurable
 char pass[] = "connect.me"; //Needs to be configurable
 
 ClockElement timeClockElements[NUM_CLOCK_ELEMENTS];
@@ -94,6 +94,7 @@ void setup()
   rest.function("clockcolor", setPixelColor);
   rest.function("clocktime", getWifiTime);
   rest.function("clockwifi", beginWifiServer);
+  rest.function("clockconfiguration", configureClock);
     
   rest.function("wordclockfreya", showFreya);
 
@@ -129,6 +130,28 @@ void loop()
   client.stop();
 }
 
+int configureClock(String command){
+  IPAddress address = WiFi.localIP();
+  String ipAddress = String(address[0]) + "." + 
+        String(address[1]) + "." + 
+        String(address[2]) + "." + 
+        String(address[3]);
+  client.print("<html>");
+  client.print("<head>");
+  client.print("<title>Esp32</title>");
+  client.print("<meta charset='UTF-8'>");
+  client.print("</head>");
+  client.print("<body>");
+  client.print("<h1>Choose access point</h1>");
+  client.print("<form method=\"GET\" action=/clockwifi>{{p}}");
+  client.print("<br/><input type=\"text\" name=\"password\" placeholder=\"Wifi password\"/>");
+  client.print("<br/><input type=\"submit\" value=\"Save\"/>");
+  client.print("</form>");
+  client.print("</body>");
+  client.print("</html>");
+  return 1;
+}
+
 void handleClockFunctions() {
   getTimeFromNTPServer();
   resetAllLEDs();
@@ -159,8 +182,6 @@ void getTimeFromNTPServer(){
   WiFi.hostByName(ntpServerName, timeServerIP);
 
   sendNTPpacket(timeServerIP); // send an NTP packet to a time server
-  // wait to see if a reply is available
-  delay(2000);
 
   int cb = udp.parsePacket();
   if (!cb) {
@@ -183,8 +204,6 @@ void getTimeFromNTPServer(){
     Serial.print(currentMinute);
     Serial.println("");
   }
-  // wait ten seconds before asking for the time again
-  delay(3000);
 }
 
 // send an NTP request to the time server at the given address
@@ -212,6 +231,7 @@ void sendNTPpacket(IPAddress& address) {
 }
 
 int beginWifiServer(String command) {
+  Serial.println(command);
   WiFi.end();
   WiFi.begin("Honor 7X", "connect.me");
   server.begin();
