@@ -28,18 +28,43 @@ abstract class ClockRestCommands {
     }
   }
 
-  void changeBrightness(final double brightness) {
+  void changeBrightness(
+    final double brightness,
+  ) {
     String brightnessCommand = "$brightness";
     sendClockCommand("clockbrightness", brightnessCommand);
   }
 
-  void setTime(final TimeOfDay time) {
+  void setTime(
+    final TimeOfDay time,
+  ) {
     String timeCommand = "${time.hour},${time.minute}";
     sendClockCommand("clocktime", timeCommand);
   }
 
-  void setLEDColor(final int r, final int g, final int b) {
+  void setLEDColor(
+    final int r,
+    final int g,
+    final int b,
+  ) {
     String colorCommand = "$r,$g,$b";
     sendClockCommand("clockcolor", colorCommand);
+  }
+
+  void configureClock(
+    final String wifiSSID,
+    final String wifiPassword,
+    final String clockRoom,
+  ) {
+    String configureCommand =
+        "ssid=$wifiSSID,password=$wifiPassword,room-name=$clockRoom";
+    sendClockCommand("clockconfiguration", configureCommand);
+  }
+
+  void changeClockName(
+    final String clockName,
+  ) {
+    String clockNameCommand = "$clockName";
+    sendClockCommand("clockname", clockNameCommand);
   }
 }

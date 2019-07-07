@@ -8,6 +8,7 @@ import 'dart:async';
 
 import '../model/clock.dart';
 import '../widgets/clock_list_item.dart';
+import './configuration_screen.dart';
 
 class SelectClock extends StatefulWidget {
   @override
@@ -15,17 +16,14 @@ class SelectClock extends StatefulWidget {
 }
 
 class _SelectClockState extends State<SelectClock> {
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      new GlobalKey<RefreshIndicatorState>();
   List<Clock> clocks = [];
 
   @override
   void initState() {
     super.initState();
-
     _scanDevices();
-
-    //For debugging purposes only
-    //_addWordClock("word-clock", "192.168.4.1", "Wohnzimmer");
-    //_addWordClock("word-clock", "192.168.4.2", "Schlafzimmer");
   }
 
   Future<Null> _scanDevices() async {
@@ -37,6 +35,12 @@ class _SelectClockState extends State<SelectClock> {
     http.Client client = http.Client();
     stream.listen((NetworkAddress addr) {
       _testConnection(client, addr.ip);
+    }, onDone: () {
+      if (clocks.length == 0) {
+        print("Found ${clocks.length} clocks!");
+      } else {
+        print("Finished Scanning");
+      }
     });
 
     return null;
@@ -75,29 +79,51 @@ class _SelectClockState extends State<SelectClock> {
 
   void _addWordClock(
       final String clockType, final String ip, final String roomName) {
-    setState(() {
-      clocks.add(Clock(clockType, ip, roomName));
-    });
+    setState(
+      () {
+        clocks.add(
+          Clock(
+            clockType,
+            ip,
+            roomName,
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Word Clock'),
+        title: Text('99Crafts Uhren'),
         backgroundColor: Color.fromARGB(255, 10, 9, 8),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.refresh),
-            tooltip: 'Change clock time',
+            tooltip: 'Refresh list of clocks',
             onPressed: () {
+              _refreshIndicatorKey.currentState.show();
               _scanDevices();
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.add),
+            tooltip: 'Configure a new clock',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ConfigurationScreen(),
+                ),
+              );
             },
           ),
         ],
       ),
       backgroundColor: Color.fromARGB(255, 242, 244, 243),
       body: RefreshIndicator(
+        key: _refreshIndicatorKey,
         onRefresh: _scanDevices,
         child: Flex(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -11,12 +11,12 @@ import 'dart:async';
 
 ///Class to display the main screen of the app.
 class HomeScreen extends StatefulWidget {
-  ///Function to set the color of the word clock
   final String _ipAddress;
+  final String _clockName;
 
   WordClockRestCommands _wordClockRestCommands;
 
-  HomeScreen(this._ipAddress) {
+  HomeScreen(this._ipAddress, this._clockName) {
     this._wordClockRestCommands = WordClockRestCommands(_ipAddress);
   }
 
@@ -39,73 +39,56 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  /*
-   * Build the 
-   */
-  Widget _buildBottomPicker(Widget picker) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.3,
-      padding: const EdgeInsets.only(top: 6.0),
-      color: CupertinoColors.white,
-      child: DefaultTextStyle(
-        style: const TextStyle(
-          color: CupertinoColors.black,
-          fontSize: 22.0,
-        ),
-        child: GestureDetector(
-          // Blocks taps from propagating to the modal sheet and popping.
-          onTap: () {},
-          child: SafeArea(
-            top: false,
-            child: picker,
+  void changeClockConfiguration() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
           ),
-        ),
-      ),
-    );
-  }
-
-  ///Build and show the time picker dialog. The picker differentiates between
-  ///the two platforms. If on iOS, it uses a cupertino styled time picker
-  ///dialog. If on android, a material themed time picker dialog is shown.
-  Future<void> selectTime(BuildContext context) async {
-    //If the platform is iOS
-    if (Theme.of(context).platform == TargetPlatform.iOS) {
-      showCupertinoModalPopup<void>(
-        context: context,
-        builder: (BuildContext context) {
-          return _buildBottomPicker(
-            CupertinoDatePicker(
-              mode: CupertinoDatePickerMode.time,
-              initialDateTime: DateTime.now(),
-              onDateTimeChanged: (DateTime newDateTime) {
-                //_selectedTime = newDateTime.to;
-                widget._wordClockRestCommands.setTime(TimeOfDay(
-                    hour: newDateTime.hour, minute: newDateTime.minute));
-              },
+          child: Container(
+            height: 220.0,
+            width: 300.0,
+            child: Column(
+              children: <Widget>[
+                Container(
+                  alignment: Alignment.topLeft,
+                  width: 300,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(8),
+                      topRight: Radius.circular(8),
+                    ),
+                    color: Color.fromARGB(255, 10, 9, 8),
+                  ),
+                  child: Padding(
+                    child: Text(
+                      "Edit Clock Configuration",
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 242, 244, 243),
+                        fontSize: 18,
+                      ),
+                    ),
+                    padding: EdgeInsets.all(22),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: "Clock Name",
+                      ),
+                    ),
+                    padding: EdgeInsets.all(30),
+                  ),
+                ),
+              ],
             ),
-          );
-        },
-      );
-    } else {
-      //If on android
-      final TimeOfDay time = await showTimePicker(
-        context: context,
-        initialTime: _selectedTime,
-        builder: (
-          BuildContext context,
-          Widget child,
-        ) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-            child: child,
-          );
-        },
-      );
-      if (time != null) {
-        _selectedTime = time;
-        widget._wordClockRestCommands.setTime(time);
-      }
-    }
+          ),
+        );
+      },
+    );
   }
 
   int _tapCount = 1;
@@ -116,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
     //_startBluetoothConnectionListener();
     return Scaffold(
       appBar: AppBar(
-        title: Text('Word Clock'),
+        title: Text('Word Clock @ ${widget._clockName}'),
         backgroundColor: Color.fromARGB(255, 10, 9, 8),
         actions: <Widget>[
           IconButton(
@@ -133,10 +116,10 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           IconButton(
-            icon: Icon(Icons.access_time),
-            tooltip: 'Change clock time',
+            icon: Icon(Icons.edit),
+            tooltip: 'Change clock configuration',
             onPressed: () {
-              selectTime(context);
+              changeClockConfiguration();
             },
           ),
         ],

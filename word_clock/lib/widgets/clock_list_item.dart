@@ -23,7 +23,8 @@ class ClockListItem extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => HomeScreen(_clock.ipAddress),
+              builder: (context) =>
+                  HomeScreen(_clock.ipAddress, _clock.roomName),
             ),
           );
         },
