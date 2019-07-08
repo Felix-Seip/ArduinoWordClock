@@ -27,16 +27,15 @@ String CLOCK_TYPE = "word-clock";
 String ROOM_NAME = "Wohnzimmer"; //Needs to be configurable
 int status = WL_IDLE_STATUS;
 
-unsigned int localPort = 2390;  
 const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
 byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
 
 WiFiServer server(80);
 WiFiClient client;
-WiFiUDP udp;
+boolean isConnectedToWifi = false;
 
-char ssid[] = "Seip"; //Needs to be configurable
-char pass[] = "connect.me"; //Needs to be configurable
+char ssid[32] = "WORD CLOCK"; //Needs to be configurable
+char pass[32] = "99crafts"; //Needs to be configurable
 
 ClockElement timeClockElements[NUM_CLOCK_ELEMENTS];
 
@@ -93,16 +92,15 @@ void setup()
   // Function to be exposed
   rest.function("clockcolor", setPixelColor);
   rest.function("clocktime", getWifiTime);
-  rest.function("clockwifi", beginWifiServer);
   rest.function("clockconfiguration", configureClock);
+  rest.function("clockname", changeClockName);
     
   rest.function("wordclockfreya", showFreya);
 
   //Opposite of beginAP is WiFi.begin
-  status = WiFi.begin(ssid, pass);
+  status = WiFi.beginAP(ssid, pass);
   
   server.begin();
-  udp.begin(localPort);
   // you're connected now, so print out the status:
 
   Serial.println(WiFi.localIP());
@@ -113,129 +111,105 @@ void setup()
 }
 
 char color[3] = {255, 255, 255};
-int currentHour = 0;
-int currentMinute = 0;
+int currentHour = 17;
+int currentMinute = 20;
 
 bool showUhrWord = true;
 void loop()
 {  
   String clientRequest = "";
   client = server.available();   // listen for incoming clients
-  handleClockFunctions();
-    
+  
   while (client.connected()) {
     rest.handle(client);
     handleClockFunctions();
   }
+  handleClockFunctions();
   client.stop();
 }
 
-int configureClock(String command){
-  IPAddress address = WiFi.localIP();
-  String ipAddress = String(address[0]) + "." + 
-        String(address[1]) + "." + 
-        String(address[2]) + "." + 
-        String(address[3]);
-  client.print("<html>");
-  client.print("<head>");
-  client.print("<title>Esp32</title>");
-  client.print("<meta charset='UTF-8'>");
-  client.print("</head>");
-  client.print("<body>");
-  client.print("<h1>Choose access point</h1>");
-  client.print("<form method=\"GET\" action=/clockwifi>{{p}}");
-  client.print("<br/><input type=\"text\" name=\"password\" placeholder=\"Wifi password\"/>");
-  client.print("<br/><input type=\"submit\" value=\"Save\"/>");
-  client.print("</form>");
-  client.print("</body>");
-  client.print("</html>");
+int configureClock(String configuration){
+  Serial.println("Configuring clock with following parameters:");
+  String wifiSSID = "";
+  String wifiPassword = "";
+  String clockRoomName = "";
+
+  int beginningIndex = 0;
+  int configIndex = 0;
+  String wifiConfiguration[3];
+  while(configuration.indexOf(",", beginningIndex) != -1){
+    int index = configuration.indexOf(",", beginningIndex);
+    wifiConfiguration[configIndex] = configuration.substring(beginningIndex, index);
+    beginningIndex = index + 1;
+    configIndex++;
+  }
+
+  wifiConfiguration[configIndex] = configuration.substring(beginningIndex, configuration.length());
+  
+  for(int i = 0; i < 3; i++){
+    String wifiConfig = wifiConfiguration[i];
+    String configKeyValue[2];
+    configKeyValue[0] = wifiConfig.substring(0, wifiConfig.indexOf("=", 0));
+    configKeyValue[1] = wifiConfig.substring(configKeyValue[0].length() + 1, wifiConfig.length());
+
+    Serial.print(configKeyValue[0] + ": ");
+    Serial.println(configKeyValue[1]);
+   
+    if(configKeyValue[0].equals("ssid")){
+      configKeyValue[1].toCharArray(ssid, configKeyValue[1].length() + 1);
+    } else if (configKeyValue[0].equals("password")) {
+      configKeyValue[1].toCharArray(pass, configKeyValue[1].length() + 1);
+    } else if (configKeyValue[0].equals("room-name")) {
+      ROOM_NAME = configKeyValue[1];
+    }
+  }
+
+  beginWifiServer();
+  
   return 1;
 }
 
+int changeClockName(String clockName){
+  ROOM_NAME = clockName;
+}
+
 void handleClockFunctions() {
-  getTimeFromNTPServer();
-  resetAllLEDs();
-  showBasicClockElements();
-  showMinuteLEDs(currentMinute, currentHour, showUhrWord);
-  showHourLEDs(currentHour);
-    
-  if (showUhrWord)
-  {
-    //Light up the LEDs for the word "UHR"
+  if(isConnectedToWifi) {
+    //getTimeFromNTPServer();
+    resetAllLEDs();
+    showBasicClockElements();
+    showMinuteLEDs(currentMinute, currentHour, showUhrWord);
+    showHourLEDs(currentHour);
+
+    if (showUhrWord)
+    {
+      //Light up the LEDs for the word "UHR"
+      leds[8] = CRGB(color[1], color[0], color[2]);
+      leds[9] = CRGB(color[1], color[0], color[2]);
+      leds[10] = CRGB(color[1], color[0], color[2]);
+    }
+  } else {
     leds[8] = CRGB(color[1], color[0], color[2]);
-    leds[9] = CRGB(color[1], color[0], color[2]);
-    leds[10] = CRGB(color[1], color[0], color[2]);
   }
 
   FastLED.setBrightness(brightness);
   FastLED.show();
 }
 
-/* Don't hardwire the IP address or we won't get the benefits of the pool.
-    Lookup the IP address for the host name instead */
-//IPAddress timeServer(129, 6, 15, 28); // time.nist.gov NTP server
-IPAddress timeServerIP; // time.nist.gov NTP server address
-const char* ntpServerName = "1.de.pool.ntp.org";
-
 void getTimeFromNTPServer(){
-    //get a random server from the pool
-  WiFi.hostByName(ntpServerName, timeServerIP);
+  unsigned long epoch = WiFi.getTime() + 7200;
 
-  sendNTPpacket(timeServerIP); // send an NTP packet to a time server
-
-  int cb = udp.parsePacket();
-  if (!cb) {
-    Serial.println("no packet yet");
-  } else {
-    udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
-
-
-    unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
-    unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
-    unsigned long secsSince1900 = highWord << 16 | lowWord;
-    const unsigned long seventyYears = 2208988800UL;
-    unsigned long epoch = secsSince1900 - seventyYears + 7200;
-
-    currentHour  = (epoch  % 86400L) / 3600;
-    // print the hour, minute and second:
-    currentMinute = (epoch  % 3600) / 60;
-    Serial.print(currentHour);
-    Serial.print(":");
-    Serial.print(currentMinute);
-    Serial.println("");
-  }
+  currentHour  = (epoch  % 86400L) / 3600;
+  // print the hour, minute and second:
+  currentMinute = (epoch  % 3600) / 60;
 }
 
-// send an NTP request to the time server at the given address
-void sendNTPpacket(IPAddress& address) {
-  Serial.println("sending NTP packet...");
-  // set all bytes in the buffer to 0
-  memset(packetBuffer, 0, NTP_PACKET_SIZE);
-  // Initialize values needed to form NTP request
-  // (see URL above for details on the packets)
-  packetBuffer[0] = 0b11100011;   // LI, Version, Mode
-  packetBuffer[1] = 0;     // Stratum, or type of clock
-  packetBuffer[2] = 6;     // Polling Interval
-  packetBuffer[3] = 0xEC;  // Peer Clock Precision
-  // 8 bytes of zero for Root Delay & Root Dispersion
-  packetBuffer[12]  = 49;
-  packetBuffer[13]  = 0x4E;
-  packetBuffer[14]  = 49;
-  packetBuffer[15]  = 52;
-
-  // all NTP fields have been given values, now
-  // you can send a packet requesting a timestamp:
-  udp.beginPacket(address, 123); //NTP requests are to port 123
-  udp.write(packetBuffer, NTP_PACKET_SIZE);
-  udp.endPacket();
-}
-
-int beginWifiServer(String command) {
-  Serial.println(command);
+void beginWifiServer() {
+  isConnectedToWifi = true;
   WiFi.end();
-  WiFi.begin("Honor 7X", "connect.me");
+  WiFi.begin(ssid, pass);
   server.begin();
-  return 1;
+  Serial.println(WiFi.localIP());
 }
 
 int showFreya(String command) {
