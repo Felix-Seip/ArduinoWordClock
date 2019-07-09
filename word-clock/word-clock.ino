@@ -189,7 +189,15 @@ void handleClockFunctions() {
       leds[10] = CRGB(color[1], color[0], color[2]);
     }
   } else {
-    leds[8] = CRGB(color[1], color[0], color[2]);
+    leds[83] = CRGB(color[1], color[0], color[2]);
+    leds[70] = CRGB(color[1], color[0], color[2]);
+    leds[61] = CRGB(color[1], color[0], color[2]);
+    leds[48] = CRGB(color[1], color[0], color[2]);
+    leds[39] = CRGB(color[1], color[0], color[2]);
+    
+    leds[72] = CRGB(color[1], color[0], color[2]);
+    leds[73] = CRGB(color[1], color[0], color[2]);
+    leds[74] = CRGB(color[1], color[0], color[2]);
   }
 
   FastLED.setBrightness(brightness);
@@ -365,7 +373,7 @@ ClockElement findClockElementByNumericValueAndType(int numericValue, CLOCK_ELEME
   {
     ClockElement clockElement = timeClockElements[i];
     
-    for (int j = 0; j < clockElement.GetNumericValuesArrayLength(); j++)
+    for (int j = 0; j <= clockElement.GetNumericValuesArrayLength(); j++)
     {
       if(elementType == MINUTE && clockElement.GetClockElementType() == MINUTE){
         if (numericValue >= clockElement.GetNumericValueAtIndex(j) && numericValue < (clockElement.GetNumericValueAtIndex(j) + 5))
