@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wifi/wifi.dart';
-import 'package:ping_discover_network/ping_discover_network.dart';
-import 'dart:convert';
-import 'dart:io';
-import 'package:http/http.dart' as http;
+import '../util/device_scanner.dart';
 import 'dart:async';
 
 import '../model/clock.dart';
@@ -23,71 +19,17 @@ class _SelectClockState extends State<SelectClock> {
   @override
   void initState() {
     super.initState();
-    _scanDevices();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _refreshIndicatorKey.currentState.show());
+    //clocks.add(Clock("word-clock", "192.168.2.147", "Bedroom"));
   }
 
-  Future<Null> _scanDevices() async {
-    final String ip = await Wifi.ip;
-    final String subnet = ip.substring(0, ip.lastIndexOf('.'));
-    final int port = 80;
-
-    final stream = NetworkAnalyzer.discover(subnet, port);
-    http.Client client = http.Client();
-    stream.listen((NetworkAddress addr) {
-      _testConnection(client, addr.ip);
-    }, onDone: () {
-      if (clocks.length == 0) {
-        print("Found ${clocks.length} clocks!");
-      } else {
-        print("Finished Scanning");
-      }
-    });
-
-    return null;
-  }
-
-  void _testConnection(final http.Client client, final String ip) async {
-    try {
-      final response = await client.get(Uri.parse('http://$ip/'));
-
-      if (response.statusCode == 200) {
-        if (!response.body.startsWith("<")) {
-          var data = json.decode(response.body);
-          final String clockType = data["variables"]["type"];
-          final String roomName = data["variables"]["room_name"];
-
-          if (!clocks.contains(ip)) {
-            print(
-                'Found a device of type $clockType with ip $ip! Adding it to list of clocks');
-            List<Clock> containedClocks = [];
-            for (Clock clock in clocks) {
-              if (clock.ipAddress.compareTo(ip) == 0) {
-                containedClocks.add(clock);
-              }
-            }
-
-            if (containedClocks.length == 0) {
-              _addWordClock(clockType, ip, roomName);
-            }
-          }
-        }
-      }
-    } on SocketException catch (e) {
-      //NOP
-    }
-  }
-
-  void _addWordClock(
-      final String clockType, final String ip, final String roomName) {
-    setState(
-      () {
-        clocks.add(
-          Clock(
-            clockType,
-            ip,
-            roomName,
-          ),
-        );
+  Future<Null> _scanDevices() {
+    return DeviceScanner.scanDevicesInLocalNetwork().then(
+      (clocks) {
+        setState(() {
+          clocks = clocks;
+        });
       },
     );
   }
@@ -134,7 +76,9 @@ class _SelectClockState extends State<SelectClock> {
                 shrinkWrap: true,
                 itemCount: clocks.length,
                 itemBuilder: (BuildContext ctxt, int index) {
-                  return ClockListItem(clocks[index]);
+                  return ClockListItem(
+                    clocks[index],
+                  );
                 },
               ),
             ),
