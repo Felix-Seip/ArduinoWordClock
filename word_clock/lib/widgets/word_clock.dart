@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'clock_element.dart';
 import 'dart:async';
 import 'package:flutter/services.dart' show rootBundle;
+import 'dart:math';
 
 class WordClock extends StatefulWidget {
   List<String> _clockLetters = [];
@@ -50,12 +51,14 @@ class _WordClockState extends State<WordClock> {
       _clockElements[i].setColor(Colors.black);
     }
 
+    int hour =
+        currentTime.hour <= 12 ? currentTime.hour : currentTime.hour - 12;
+
+    int minute = currentTime.minute;
+
+    MapEntry<int, int> entr = _findClockElement(minute, true);
+
     for (MapEntry<int, MapEntry<int, int>> entry in _wordDefintions.entries) {
-      int hour =
-          currentTime.hour <= 12 ? currentTime.hour : currentTime.hour - 12;
-
-      int minute = currentTime.minute;
-
       if (entry.key == -1 || entry.key == -2) {
         for (int i = entry.value.key; i <= entry.value.value; i++) {
           _clockElements[i].setColor(Colors.red);
@@ -68,107 +71,128 @@ class _WordClockState extends State<WordClock> {
         }
       }
 
-      if (hour == entry.key) {
-        for (int i = entry.value.key; i <= entry.value.value; i++) {
-          _clockElements[i].setColor(Colors.red);
-        }
-      }
-
       if (minute == 30 && entry.key == -5) {
         for (int i = entry.value.key; i <= entry.value.value; i++) {
           _clockElements[i].setColor(Colors.red);
         }
-      }
-
-      if (((minute >= 20 && minute < 25) || (minute >= 40 && minute < 55)) &&
-          entry.key == 20) {
-        if (60 - minute > 35) {
-          for (int i = _wordDefintions[-4].key;
-              i <= _wordDefintions[-4].value;
-              i++) {
-            _clockElements[i].setColor(Colors.red);
-          }
-        } else {
-          for (int i = _wordDefintions[-3].key;
-              i <= _wordDefintions[-3].value;
-              i++) {
-            _clockElements[i].setColor(Colors.red);
-          }
-        }
-        for (int i = entry.value.key; i <= entry.value.value; i++) {
-          _clockElements[i].setColor(Colors.red);
-        }
-      }
-
-      if (((minute >= 15 && minute < 20) || (minute >= 45 && minute < 50)) &&
-          entry.key == 15) {
-        if (60 - minute > 35) {
-          for (int i = _wordDefintions[-4].key;
-              i <= _wordDefintions[-4].value;
-              i++) {
-            _clockElements[i].setColor(Colors.red);
-          }
-        } else {
-          for (int i = _wordDefintions[-3].key;
-              i <= _wordDefintions[-3].value;
-              i++) {
-            _clockElements[i].setColor(Colors.red);
-          }
-        }
-        for (int i = entry.value.key; i <= entry.value.value; i++) {
-          _clockElements[i].setColor(Colors.red);
-        }
-      }
-
-      if ((minute >= 10 || minute >= 50) && entry.key == 10) {
-        if (60 - minute > 35) {
-          for (int i = _wordDefintions[-4].key;
-              i <= _wordDefintions[-4].value;
-              i++) {
-            _clockElements[i].setColor(Colors.red);
-          }
-        } else {
-          for (int i = _wordDefintions[-3].key;
-              i <= _wordDefintions[-3].value;
-              i++) {
-            _clockElements[i].setColor(Colors.red);
-          }
-        }
-        for (int i = entry.value.key; i <= entry.value.value; i++) {
-          _clockElements[i].setColor(Colors.red);
-        }
-      }
-
-      if ((minute == 5 || minute == 55) && entry.key == 5) {
-        if (60 - minute > 35) {
-          for (int i = _wordDefintions[-4].key;
-              i <= _wordDefintions[-4].value;
-              i++) {
-            _clockElements[i].setColor(Colors.red);
-          }
-        } else {
-          for (int i = _wordDefintions[-3].key;
-              i <= _wordDefintions[-3].value;
-              i++) {
-            _clockElements[i].setColor(Colors.red);
-          }
-        }
-        for (int i = entry.value.key; i <= entry.value.value; i++) {
-          _clockElements[i].setColor(Colors.red);
-        }
+        hour++;
       }
     }
+
+    if (entr != null) {
+      for (int i = entr.key; i <= entr.value; i++) {
+        _clockElements[i].setColor(Colors.red);
+      }
+    }
+
+    if (60 - minute > 35 &&
+        minute != 0 &&
+        minute != 35 &&
+        minute != 25 &&
+        minute != 30) {
+      for (int i = _wordDefintions[-4].key;
+          i <= _wordDefintions[-4].value;
+          i++) {
+        _clockElements[i].setColor(Colors.red);
+      }
+    } else if (minute != 0 && minute != 35 && minute != 25 && minute != 30) {
+      for (int i = _wordDefintions[-3].key;
+          i <= _wordDefintions[-3].value;
+          i++) {
+        _clockElements[i].setColor(Colors.red);
+      }
+      hour++;
+    }
+
+    if (minute == 25) {
+      for (int i = _wordDefintions[-3].key;
+          i <= _wordDefintions[-3].value;
+          i++) {
+        _clockElements[i].setColor(Colors.red);
+      }
+      for (int i = _wordDefintions[-5].key;
+          i <= _wordDefintions[-5].value;
+          i++) {
+        _clockElements[i].setColor(Colors.red);
+      }
+      hour++;
+    } else if (minute == 35) {
+      for (int i = _wordDefintions[-4].key;
+          i <= _wordDefintions[-4].value;
+          i++) {
+        _clockElements[i].setColor(Colors.red);
+      }
+      for (int i = _wordDefintions[-5].key;
+          i <= _wordDefintions[-5].value;
+          i++) {
+        _clockElements[i].setColor(Colors.red);
+      }
+      hour++;
+    }
+
+    entr = _findClockElement(hour, false);
+    for (int i = entr.key; i <= entr.value; i++) {
+      _clockElements[i].setColor(Colors.red);
+    }
+  }
+
+  MapEntry<int, int> _findClockElement(int value, final bool isMinute) {
+    int startIndex = 0;
+    if (!isMinute) {
+      startIndex = 9;
+      if (value > 12) {
+        value = value - 12;
+      }
+    }
+
+    if (isMinute) {
+      value = value - (value % 5);
+    }
+
+    if (isMinute) {
+      switch (value) {
+        case 5:
+        case 55:
+          value = -10;
+          break;
+        case 10:
+        case 50:
+          value = -11;
+          break;
+        case 15:
+        case 45:
+          value = -12;
+          break;
+        case 20:
+        case 40:
+          value = -13;
+          break;
+        case 25:
+        case 35:
+          value = -10;
+          break;
+        default:
+      }
+    }
+
+    for (int i = startIndex; i < _wordDefintions.entries.length; i++) {
+      if (_wordDefintions.entries.toList()[i].key == value) {
+        return _wordDefintions.entries.toList()[i].value;
+      }
+    }
+    return null;
   }
 
   void _checkTime() {
     Timer(
       Duration(seconds: 1),
       () {
-        _showTime(TimeOfDay(
-          hour: 3,
-          minute: 40,
-        ) // 3:00pm
-            );
+        _showTime(
+          TimeOfDay(
+            hour: DateTime.now().hour,
+            minute: DateTime.now().minute,
+          ),
+        );
         _checkTime();
       },
     );
@@ -178,9 +202,9 @@ class _WordClockState extends State<WordClock> {
     _clockElements = widget._clockLetters
         .map(
           (title) => ClockElement(
-                title,
-                widget._currentColor,
-              ),
+            title,
+            widget._currentColor,
+          ),
         )
         .toList();
     if (widget._animate) {

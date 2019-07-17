@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../clocks/word_clock/word_clock_rest_commands.dart';
+import 'package:wifi/wifi.dart';
+import 'dart:async';
+import 'package:connectivity/connectivity.dart';
 
 class ConfigurationScreen extends StatefulWidget {
   WordClockRestCommands _commands;
@@ -16,6 +19,20 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
   String _wifiSSID;
   String _wifiPassword;
   String _clockName;
+
+  Future<String> _getCurrentNetworkSSID() async {
+    return Connectivity().getWifiName();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentNetworkSSID().then((ssid) {
+      setState(() {
+        _wifiSSID = ssid;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +57,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
                 onChanged: (wifiSSID) {
                   _wifiSSID = wifiSSID;
                 },
+                controller: TextEditingController()..text = _wifiSSID,
               ),
             ),
             Padding(
@@ -81,9 +99,20 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.check),
         onPressed: () {
-          widget._commands.configureClock(_wifiSSID, _wifiPassword, _clockName);
+          _testConnection().then((state) {
+            if (state == WifiState.success) {
+              widget._commands
+                  .configureClock(_wifiSSID, _wifiPassword, _clockName);
+            } else {
+              print('Connection error');
+            }
+          });
         },
       ),
     );
+  }
+
+  Future<WifiState> _testConnection() async {
+    return Wifi.connection(_wifiSSID, _wifiPassword);
   }
 }

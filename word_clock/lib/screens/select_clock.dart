@@ -21,14 +21,14 @@ class _SelectClockState extends State<SelectClock> {
     super.initState();
     WidgetsBinding.instance
         .addPostFrameCallback((_) => _refreshIndicatorKey.currentState.show());
-    //clocks.add(Clock("word-clock", "192.168.2.147", "Bedroom"));
+    clocks.add(Clock("word-clock", "192.168.2.147", "Bedroom"));
   }
 
   Future<Null> _scanDevices() {
     return DeviceScanner.scanDevicesInLocalNetwork().then(
       (clocks) {
         setState(() {
-          clocks = clocks;
+          clocks.addAll(clocks);
         });
       },
     );
