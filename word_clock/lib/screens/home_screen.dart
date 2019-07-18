@@ -3,7 +3,7 @@ import '../dialogs/color_picker_dialog.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/cupertino.dart';
 
-import 'package:word_clock/widgets/word_clock.dart';
+import 'package:word_clock/widgets/clocks/word_clock/word_clock.dart';
 import '../clocks/word_clock/word_clock_rest_commands.dart';
 import 'dart:async';
 

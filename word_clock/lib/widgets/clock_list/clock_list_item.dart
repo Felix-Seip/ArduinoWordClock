@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../model/clock.dart';
-import '../screens/home_screen.dart';
+import '../../model/clock.dart';
+import '../../screens/home_screen.dart';
 
 class ClockListItem extends StatelessWidget {
-  Clock _clock;
+  final Clock _clock;
 
   ClockListItem(this._clock);
 

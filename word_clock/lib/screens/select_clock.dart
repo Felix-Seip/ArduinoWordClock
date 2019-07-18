@@ -3,8 +3,7 @@ import '../util/device_scanner.dart';
 import 'dart:async';
 
 import '../model/clock.dart';
-import '../widgets/clock_list_item.dart';
-import './configuration_screen.dart';
+import '../widgets/clock_list/clock_list.dart';
 
 class SelectClock extends StatefulWidget {
   @override
@@ -72,23 +71,7 @@ class _SelectClockState extends State<SelectClock> {
                   ],
                 ),
               )
-            : Flex(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                direction: Axis.vertical,
-                children: <Widget>[
-                  Expanded(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: _clocks.length,
-                      itemBuilder: (BuildContext ctxt, int index) {
-                        return ClockListItem(
-                          _clocks[index],
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
+            : ClockList(_clocks),
       ),
     );
   }

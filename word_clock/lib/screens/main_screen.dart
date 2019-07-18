@@ -26,15 +26,19 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: _children[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
-        onTap: onTabTapped, // new
-        currentIndex: _currentIndex, // new
+        onTap: onTabTapped,
+        currentIndex: _currentIndex,
         items: [
           BottomNavigationBarItem(
-            icon: new Icon(Icons.home),
+            icon: new Icon(
+              Icons.home,
+            ),
             title: new Text('Auswählen'),
           ),
           BottomNavigationBarItem(
-            icon: new Icon(Icons.add),
+            icon: new Icon(
+              Icons.add,
+            ),
             title: new Text('Konfigurieren'),
           ),
         ],

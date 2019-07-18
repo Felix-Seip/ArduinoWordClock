@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../clocks/word_clock/word_clock_rest_commands.dart';
-import 'package:wifi/wifi.dart';
-import 'dart:async';
+import '../widgets/configuration_item.dart';
 
 class ConfigurationScreen extends StatefulWidget {
-  WordClockRestCommands _commands;
-  ConfigurationScreen() {
-    this._commands = WordClockRestCommands("192.168.4.1");
-  }
+  final WordClockRestCommands _commands = WordClockRestCommands("192.168.4.1");
 
   @override
   _ConfigurationScreenState createState() => _ConfigurationScreenState();
@@ -19,18 +15,9 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
   String _wifiPassword;
   String _clockName;
 
-  Future<String> _getCurrentNetworkSSID() async {
-    return "";
-  }
-
   @override
   void initState() {
     super.initState();
-    _getCurrentNetworkSSID().then((ssid) {
-      setState(() {
-        _wifiSSID = ssid;
-      });
-    });
   }
 
   @override
@@ -47,40 +34,15 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(top: 10, bottom: 10),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "WLAN Name",
-                ),
-                onChanged: (wifiSSID) {
-                  _wifiSSID = wifiSSID;
-                },
-                controller: TextEditingController()..text = _wifiSSID,
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(top: 10, bottom: 10),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "WLAN Passwort",
-                ),
-                onChanged: (wifiPassword) {
-                  _wifiPassword = wifiPassword;
-                },
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(top: 10, bottom: 10),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "Uhr Name",
-                ),
-                onChanged: (clockName) {
-                  _clockName = clockName;
-                },
-              ),
-            ),
+            ConfigurationItem("WLAN Name", (String text) {
+              _wifiSSID = text;
+            }),
+            ConfigurationItem("WLAN Passwort", (String text) {
+              _wifiPassword = text;
+            }),
+            ConfigurationItem("Uhr Name", (String text) {
+              _clockName = text;
+            }),
             Padding(
               padding: EdgeInsets.only(top: 20),
               child: Text(
@@ -98,20 +60,9 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.check),
         onPressed: () {
-          _testConnection().then((state) {
-            if (state == WifiState.success) {
-              widget._commands
-                  .configureClock(_wifiSSID, _wifiPassword, _clockName);
-            } else {
-              print('Connection error');
-            }
-          });
+          widget._commands.configureClock(_wifiSSID, _wifiPassword, _clockName);
         },
       ),
     );
-  }
-
-  Future<WifiState> _testConnection() async {
-    return Wifi.connection(_wifiSSID, _wifiPassword);
   }
 }
