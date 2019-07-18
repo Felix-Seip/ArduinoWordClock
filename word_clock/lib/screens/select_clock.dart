@@ -14,21 +14,19 @@ class SelectClock extends StatefulWidget {
 class _SelectClockState extends State<SelectClock> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
-  List<Clock> clocks = [];
+  List<Clock> _clocks = [];
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _refreshIndicatorKey.currentState.show());
-    clocks.add(Clock("word-clock", "192.168.2.147", "Bedroom"));
+    //_clocks.add(Clock("word-clock", "192.168.2.147", "Bedroom"));
   }
 
   Future<Null> _scanDevices() {
     return DeviceScanner.scanDevicesInLocalNetwork().then(
       (clocks) {
         setState(() {
-          clocks.addAll(clocks);
+          _clocks.addAll(clocks);
         });
       },
     );
@@ -49,41 +47,48 @@ class _SelectClockState extends State<SelectClock> {
               _scanDevices();
             },
           ),
-          IconButton(
-            icon: Icon(Icons.add),
-            tooltip: 'Configure a new clock',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ConfigurationScreen(),
-                ),
-              );
-            },
-          ),
         ],
       ),
       backgroundColor: Color.fromARGB(255, 242, 244, 243),
       body: RefreshIndicator(
         key: _refreshIndicatorKey,
         onRefresh: _scanDevices,
-        child: Flex(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          direction: Axis.vertical,
-          children: <Widget>[
-            Expanded(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: clocks.length,
-                itemBuilder: (BuildContext ctxt, int index) {
-                  return ClockListItem(
-                    clocks[index],
-                  );
-                },
+        child: _clocks.length == 0
+            ? Padding(
+                padding: EdgeInsets.all(50),
+                child: Stack(
+                  children: <Widget>[
+                    Center(
+                      child: Text(
+                        "Es wurden keine 99 Crafts Uhren gefunden. Bitte stellen Sie sicher dass Sie mit einem WLAN Netzwerk verbunden sind und dass sich 99 Crafts Uhren in dem Netzwerk befinden.",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color.fromARGB(100, 0, 0, 0),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    ListView()
+                  ],
+                ),
+              )
+            : Flex(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                direction: Axis.vertical,
+                children: <Widget>[
+                  Expanded(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _clocks.length,
+                      itemBuilder: (BuildContext ctxt, int index) {
+                        return ClockListItem(
+                          _clocks[index],
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

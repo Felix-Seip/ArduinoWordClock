@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import './screens/splash_screen.dart';
-import './screens/select_clock.dart';
+import './screens/main_screen.dart';
 
 void main() => runApp(MyApp());
 
@@ -32,7 +32,7 @@ class _MyApp extends State<MyApp> {
       ),
       home: Scaffold(
         //_connectedDevice == null
-        body: !_isPastSplashScreen ? SplashScreen() : SelectClock(),
+        body: !_isPastSplashScreen ? SplashScreen() : MainScreen(),
       ),
     );
   }

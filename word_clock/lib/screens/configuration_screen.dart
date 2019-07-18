@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../clocks/word_clock/word_clock_rest_commands.dart';
 import 'package:wifi/wifi.dart';
 import 'dart:async';
-import 'package:connectivity/connectivity.dart';
 
 class ConfigurationScreen extends StatefulWidget {
   WordClockRestCommands _commands;
@@ -21,7 +20,7 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
   String _clockName;
 
   Future<String> _getCurrentNetworkSSID() async {
-    return Connectivity().getWifiName();
+    return "";
   }
 
   @override
