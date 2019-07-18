@@ -67,7 +67,6 @@ class _SelectClockState extends State<SelectClock> {
                         textAlign: TextAlign.center,
                       ),
                     ),
-                    ListView()
                   ],
                 ),
               )
