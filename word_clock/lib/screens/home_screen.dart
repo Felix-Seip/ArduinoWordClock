@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:word_clock/widgets/clocks/word_clock/word_clock.dart';
 import '../clocks/word_clock/word_clock_rest_commands.dart';
 import 'dart:async';
+import '../dialogs/clock_configuration_dialog.dart';
 
 ///Class to display the main screen of the app.
 class HomeScreen extends StatefulWidget {
@@ -24,7 +25,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Color currentColor = Color.fromARGB(255, 0, 0, 0);
-  TimeOfDay _selectedTime = TimeOfDay.now();
 
   ///Loads the clock letters the file "assets/clock_text.txt"
   ///Load the clock letters to be displayed on the main screen.
@@ -41,50 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: Container(
-            height: 220.0,
-            width: 300.0,
-            child: Column(
-              children: <Widget>[
-                Container(
-                  alignment: Alignment.topLeft,
-                  width: 300,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      topRight: Radius.circular(8),
-                    ),
-                    color: Color.fromARGB(255, 10, 9, 8),
-                  ),
-                  child: Padding(
-                    child: Text(
-                      "Edit Clock Configuration",
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 242, 244, 243),
-                        fontSize: 18,
-                      ),
-                    ),
-                    padding: EdgeInsets.all(22),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: "Clock Name",
-                      ),
-                    ),
-                    padding: EdgeInsets.all(30),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        return ClockConfigurationDialog();
       },
     );
   }
@@ -94,7 +51,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //_startBluetoothConnectionListener();
     return Scaffold(
       appBar: AppBar(
         title: Text('Word Clock @ ${widget._clockName}'),
