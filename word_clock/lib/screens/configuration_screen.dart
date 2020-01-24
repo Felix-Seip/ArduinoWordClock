@@ -36,13 +36,13 @@ class _ConfigurationScreenState extends State<ConfigurationScreen> {
           children: <Widget>[
             ConfigurationItem("WLAN Name", (String text) {
               _wifiSSID = text;
-            }),
+            }, EdgeInsets.all(10)),
             ConfigurationItem("WLAN Passwort", (String text) {
               _wifiPassword = text;
-            }),
+            }, EdgeInsets.all(10)),
             ConfigurationItem("Uhr Name", (String text) {
               _clockName = text;
-            }),
+            }, EdgeInsets.all(10)),
             Padding(
               padding: EdgeInsets.only(top: 20),
               child: Text(

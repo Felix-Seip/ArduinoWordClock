@@ -7,16 +7,18 @@ enum CLOCK_ELEMENT_TYPE{
 class ClockElement {
   public:
     ClockElement();
-    ClockElement(int *numericValues, int from, int rangeTo, CLOCK_ELEMENT_TYPE type);
+    ClockElement(int numericValueAM, int numericValuePM, int from, int rangeTo, CLOCK_ELEMENT_TYPE type);
     int GetRangeFrom();
     int GetRangeTo();
-    int GetNumericValueAtIndex(int index);
+    int GetNumericValueAM();
+    int GetNumericValuePM();
     CLOCK_ELEMENT_TYPE GetClockElementType();
     int GetNumericValuesArrayLength();
     
   private:
     CLOCK_ELEMENT_TYPE _type;
-    int *_numericValues;
+    int _numericValueAM;
+    int _numericValuePM;
     int _from;
     int _to;
     int _range;

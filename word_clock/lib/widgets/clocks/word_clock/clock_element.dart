@@ -6,10 +6,10 @@ enum ElementType {
 }
 
 class ClockElement extends StatefulWidget {
-  String _text = "";
+  final String _text;
   Color _color;
-  List<int> _numericValues = [];
-  ElementType _elementType;
+  final List<int> _numericValues;
+  final ElementType _elementType;
   _ClockElementState _state;
 
   ClockElement(this._text, this._color,

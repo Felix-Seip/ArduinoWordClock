@@ -3,8 +3,9 @@
 
 ClockElement::ClockElement(){ }
 
-ClockElement::ClockElement(int *numericValues, int from, int to, CLOCK_ELEMENT_TYPE type){
-  _numericValues = numericValues;
+ClockElement::ClockElement(int numericValueAM, int numericValuePM, int from, int to, CLOCK_ELEMENT_TYPE type){
+  _numericValueAM = numericValueAM;
+    _numericValuePM = numericValuePM;
   _from = from;
   _to = to;
   _type = type;
@@ -18,8 +19,12 @@ int ClockElement::GetRangeTo(){
   return _to;  
 }
 
-int ClockElement::GetNumericValueAtIndex(int index) {
-  return _numericValues[index];
+int ClockElement::GetNumericValueAM() {
+  return _numericValueAM;
+}
+
+int ClockElement::GetNumericValuePM() {
+  return _numericValuePM;
 }
 
 int ClockElement::GetNumericValuesArrayLength() {

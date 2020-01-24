@@ -31,7 +31,6 @@ class _MyApp extends State<MyApp> {
         accentColor: Color.fromARGB(255, 94, 80, 63),
       ),
       home: Scaffold(
-        //_connectedDevice == null
         body: !_isPastSplashScreen ? SplashScreen() : MainScreen(),
       ),
     );

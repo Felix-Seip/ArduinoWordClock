@@ -15,9 +15,8 @@ class DeviceScanner {
     final int port = 80;
 
     final stream = NetworkAnalyzer.discover(subnet, port);
-    http.Client client = http.Client();
     stream.listen((NetworkAddress addr) {
-      Future<Clock> clock = _testConnection(client, addr.ip);
+      Future<Clock> clock = _testConnection(addr.ip);
       clock.then((clockValue) {
         if (!clocks.contains(ip)) {
           if (null != clockValue) {
@@ -45,10 +44,13 @@ class DeviceScanner {
     return clocks;
   }
 
-  static Future<Clock> _testConnection(
-      final http.Client client, final String ip) async {
+  static Future<Clock> _testConnection(final String ip) async {
+    http.Client client = http.Client();
     try {
-      final response = await client.get(Uri.parse('http://$ip/'));
+      if (ip.endsWith(".2") || ip.endsWith(".1")) {
+        return null;
+      }
+      final response = await client.get(Uri.parse('http://192.168.2.147/'));
 
       if (response.statusCode == 200) {
         if (!response.body.startsWith("<")) {
@@ -60,7 +62,10 @@ class DeviceScanner {
       }
     } on SocketException catch (e) {
       //NOP
+    } on TimeoutException catch (e) {
+      //NOP
     }
+    client.close();
     return null;
   }
 }

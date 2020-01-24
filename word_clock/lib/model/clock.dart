@@ -1,7 +1,7 @@
 class Clock {
-  String clockType;
-  String ipAddress;
-  String roomName;
+  final String clockType;
+  final String ipAddress;
+  final String roomName;
 
   Clock(this.clockType, this.ipAddress, this.roomName);
 }
