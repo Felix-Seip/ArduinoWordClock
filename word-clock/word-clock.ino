@@ -4,12 +4,12 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <ESP8266WiFi.h>
-///#include <aREST.h>
+#include <aREST.h>
 
 #include "ClockElement.h"
 
 //#define FASTLED_ESP8266_RAW_PIN_ORDER
-#define NUM_LEDS 125
+#define NUM_LEDS 121
 #define HEART_LEDS 10
 #define NUM_CLOCK_ELEMENTS 19
 
@@ -17,15 +17,11 @@
 #define pResistor A5
 #define ONE_WIRE_BUS 7
 
-//aREST rest = aREST();
-int brightness = 255;
-// Define the array of leds
+aREST rest = aREST();
 CRGB leds[NUM_LEDS];
 String CLOCK_TYPE = "word-clock";
 String ROOM_NAME = "Wohnzimmer"; //Needs to be configurable
 
-
-WiFiClient client;
 boolean isConnectedToWifi = false;
 
 char ssid[32] = "Seip"; //Needs to be configurable
@@ -33,6 +29,8 @@ char pass[32] = "connect.me"; //Needs to be configurable
 const long utcOffsetInSeconds = 7200;
 
 WiFiUDP ntpUDP;
+WiFiClient client;
+WiFiServer server(80);
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
 ClockElement timeClockElements[NUM_CLOCK_ELEMENTS];
@@ -97,16 +95,15 @@ void setup()
 {
   Serial.begin(9600);
 
-  //rest.variable("type", &CLOCK_TYPE);
-  //rest.variable("room_name", &ROOM_NAME);
+  rest.variable("type", &CLOCK_TYPE);
+  rest.variable("room_name", &ROOM_NAME);
 
   // Function to be exposed
-  //rest.function("clockcolor", setPixelColor);
-  //rest.function("clocktime", getWifiTime);
-  //rest.function("clockconfiguration", configureClock);
-  //rest.function("clockname", changeClockName);
+  rest.function("clockcolor", setPixelColor);
+  rest.function("clockconfiguration", configureClock);
+  rest.function("clockname", changeClockName);
 
-  //rest.function("wordclockfreya", showFreya);
+  rest.function("wordclockfreya", showFreya);
 
   //Opposite of beginAP is WiFi.begin
   WiFi.begin(ssid, pass);
@@ -116,7 +113,9 @@ void setup()
     Serial.print ( "." );
   }
 
-  //server.begin();
+  Serial.println(WiFi.localIP());
+
+  server.begin();
   // you're connected now, so print out the status:
   createClockElements();
   FastLED.addLeds<WS2812B, DATA_PIN>(leds, NUM_LEDS);
@@ -132,15 +131,15 @@ void loop()
 
   String clientRequest = "";
 
-  //client = server.available();   // listen for incoming clients
+  client = server.available();   // listen for incoming clients
 
-  /*while (client.connected()) {
+  while (client.connected()) {
     rest.handle(client);
     handleClockFunctions();
-    }*/
+  }
+  
   handleClockFunctions();
   delay(100);
-  //client.stop();
 }
 
 int configureClock(String configuration) {
@@ -216,7 +215,6 @@ void handleClockFunctions() {
     leds[74] = CRGB(color[1], color[0], color[2]);
     }*/
 
-  FastLED.setBrightness(brightness);
   FastLED.show();
 }
 
@@ -236,11 +234,6 @@ void beginWifiServer() {
 
 int showFreya(String command) {
   showWordFreya();
-}
-
-int getWifiTime(String command) {
-  return 0;
-  //return WiFi.getTime();
 }
 
 //http://192.168.4.1/rgb?param=1,2,3
@@ -275,8 +268,6 @@ void showHourLEDs(int &hours) {
 }
 
 void showMinuteLEDs(int minutes, int &hours, bool &showUhrWord) {
-  ClockElement clockElement = findClockElementByNumericValueAndType(minutes, MINUTE);
-
   if (minutes >= 0 && minutes < 5) {
     showUhrWord = true;
   }
@@ -316,6 +307,7 @@ void showMinuteLEDs(int minutes, int &hours, bool &showUhrWord) {
     showLeftOverMinuteLEDs(minutes % 5);
   }
 
+  ClockElement clockElement = findClockElementByNumericValueAndType(minutes - (minutes % 5), MINUTE);
   setColorForClockElement(clockElement, color[1], color[0], color[2]);
 }
 
@@ -401,6 +393,15 @@ ClockElement findClockElementByNumericValueAndType(int numericValue, CLOCK_ELEME
         return timeClockElements[i];
       }
 
+    }
+  }
+
+  if(foundElement == NULL) {
+    Serial.print("foundElement of type ");
+    if(elementType == HOUR){
+      Serial.println("hour is NULL");
+    } else if(elementType == MINUTE) {
+      Serial.println("minute is NULL");
     }
   }
 
