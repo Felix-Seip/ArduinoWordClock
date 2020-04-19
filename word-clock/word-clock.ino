@@ -1,12 +1,10 @@
 #include <OneWire.h>
-#include <Vector.h>
 #include <Wire.h>
-//#include <TimeLib.h>
-//#include <SPI.h>
-//#include <WiFiNINA.h>
 #include <FastLED.h>
-//#include <aREST.h>
-//#include <WiFiUdp.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+#include <ESP8266WiFi.h>
+///#include <aREST.h>
 
 #include "ClockElement.h"
 
@@ -25,17 +23,17 @@ int brightness = 255;
 CRGB leds[NUM_LEDS];
 String CLOCK_TYPE = "word-clock";
 String ROOM_NAME = "Wohnzimmer"; //Needs to be configurable
-//int status = WL_IDLE_STATUS;
 
-const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
-byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
 
-//WiFiServer server(80);
-//WiFiClient client;
+WiFiClient client;
 boolean isConnectedToWifi = false;
 
-char ssid[32] = "WORD CLOCK"; //Needs to be configurable
-char pass[32] = "99crafts"; //Needs to be configurable
+char ssid[32] = "Seip"; //Needs to be configurable
+char pass[32] = "connect.me"; //Needs to be configurable
+const long utcOffsetInSeconds = 3600;
+
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
 
 ClockElement timeClockElements[NUM_CLOCK_ELEMENTS];
 
@@ -43,6 +41,17 @@ ClockElement timeClockElements[NUM_CLOCK_ELEMENTS];
 int timeClockElementRangeFrom[NUM_CLOCK_ELEMENTS] = { 44,    51,   40,   33,   55,   22,    26,     18,   3,    0,    58,  13,  -1,   117,  106,  92,      99,      62  };
 int timeClockElementRangeTo[NUM_CLOCK_ELEMENTS]   = { 48,    55,   44,   37,   59,   27,    32,     22,   7,    4,    61,  18,  -1,   121,  110,  99,      106,     66  };
 int heartLEDs[HEART_LEDS] = {38, 48, 62, 69, 83, 71, 81, 73, 58, 50 };
+
+struct CURRENT_TIME {
+  int hours;
+  int minutes;  
+
+  CURRENT_TIME(int h, int m){
+    hours = h;
+    minutes = m;
+  }
+};
+
 
 bool createdClockElements = false;
 void createClockElements()
@@ -100,12 +109,19 @@ void setup()
   //rest.function("wordclockfreya", showFreya);
 
   //Opposite of beginAP is WiFi.begin
-  //status = WiFi.beginAP(ssid, pass);
+  WiFi.begin(ssid, pass);
+
+  while ( WiFi.status() != WL_CONNECTED ) {
+    delay ( 500 );
+    Serial.print ( "." );
+  }
 
   //server.begin();
   // you're connected now, so print out the status:
   createClockElements();
   FastLED.addLeds<WS2812B, DATA_PIN>(leds, NUM_LEDS);
+
+  timeClient.begin();
 }
 
 char color[3] = {255, 255, 255};
@@ -174,13 +190,12 @@ int changeClockName(String clockName) {
 
 void handleClockFunctions() {
   /*if(isConnectedToWifi) {*/
-  //getTimeFromNTPServer();
-  int currentHour = 18;
-  int currentMinute = 40;
+  CURRENT_TIME currentTime = getTimeFromNTPServer();
+  
   resetAllLEDs();
   showBasicClockElements();
-  showMinuteLEDs(currentMinute, currentHour, showUhrWord);
-  showHourLEDs(currentHour);
+  showMinuteLEDs(currentTime.minutes, currentTime.hours, showUhrWord);
+  showHourLEDs(currentTime.hours);
 
   if (showUhrWord)
   {
@@ -205,12 +220,10 @@ void handleClockFunctions() {
   FastLED.show();
 }
 
-void getTimeFromNTPServer() {
-  //unsigned long epoch = WiFi.getTime() + 7200;
-
-  //currentHour  = (epoch  % 86400L) / 3600;
-  // print the hour, minute and second:
-  //currentMinute = (epoch  % 3600) / 60;
+CURRENT_TIME getTimeFromNTPServer() {
+  timeClient.update();
+  delay(1000);
+  return CURRENT_TIME(timeClient.getHours(), timeClient.getMinutes());
 }
 
 void beginWifiServer() {
@@ -281,8 +294,6 @@ void showMinuteLEDs(int minutes, int &hours, bool &showUhrWord) {
       {
         showWordVor();
       }
-
-
       else if (minutes >= 35 && minutes < 40)
       {
         showWordNach();
@@ -384,13 +395,9 @@ ClockElement findClockElementByNumericValueAndType(int numericValue, CLOCK_ELEME
     ClockElement clockElement = timeClockElements[i];
 
     if (elementType == MINUTE && clockElement.GetClockElementType() == MINUTE) {if((numericValue==clockElement.GetNumericValueAM()||numericValue==clockElement.GetNumericValuePM())){
-        Serial.print("Found clock element of type minute with value: ");
-        Serial.println(clockElement.GetNumericValueAM());
         return timeClockElements[i];
       }
     } else if (elementType == HOUR && clockElement.GetClockElementType() == HOUR) {if(numericValue==clockElement.GetNumericValueAM()||numericValue==clockElement.GetNumericValuePM()){
-        Serial.print("Found clock element of type hour with value: ");
-        Serial.println(clockElement.GetNumericValuePM());
         return timeClockElements[i];
       }
 
