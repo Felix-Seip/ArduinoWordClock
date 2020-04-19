@@ -30,7 +30,7 @@ boolean isConnectedToWifi = false;
 
 char ssid[32] = "Seip"; //Needs to be configurable
 char pass[32] = "connect.me"; //Needs to be configurable
-const long utcOffsetInSeconds = 3600;
+const long utcOffsetInSeconds = 7200;
 
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds);
