@@ -9,7 +9,7 @@
 #include "ClockElement.h"
 
 //#define FASTLED_ESP8266_RAW_PIN_ORDER
-#define NUM_LEDS 121
+#define NUM_LEDS 125
 #define HEART_LEDS 10
 #define NUM_CLOCK_ELEMENTS 19
 
@@ -103,11 +103,11 @@ void setup()
   rest.function("clockname", changeClockName);
 
   rest.function("wordclockfreya", showFreya);
+  rest.function("setDST", setDST);
 
   //Opposite of beginAP is WiFi.begin
   WiFi.softAP(ssid, pass);
-
-  Serial.println(WiFi.localIP());
+  Serial.println(WiFi.softAPIP());
 
   server.begin();
   // you're connected now, so print out the status:
@@ -134,6 +134,10 @@ void loop()
 
   handleClockFunctions();
   delay(100);
+}
+
+int setDST() {
+  return 1;
 }
 
 int configureClock(String configuration) {
@@ -163,8 +167,10 @@ int configureClock(String configuration) {
     Serial.print(configKeyValue[0] + ": ");
     Serial.println(configKeyValue[1]);
 
-    if (configKeyValue[0].equals("ssid")) {
-      configKeyValue[1].toCharArray(ssid, configKeyValue[1].length() + 1);
+    if (i == 0) {
+      Serial.println(configKeyValue[0]);
+      configKeyValue[0].toCharArray(ssid, configKeyValue[0].length() + 1);
+      Serial.println(ssid);
     } else if (configKeyValue[0].equals("password")) {
       configKeyValue[1].toCharArray(pass, configKeyValue[1].length() + 1);
     } else if (configKeyValue[0].equals("room-name")) {
@@ -220,6 +226,11 @@ CURRENT_TIME getTimeFromNTPServer() {
 
 void beginWifiServer() {
   WiFi.disconnect();
+
+  while ( WiFi.status() == WL_CONNECTED ) {
+    delay ( 500 );
+    Serial.print ( "." );
+  }
   
   WiFi.begin(ssid, pass);
 
