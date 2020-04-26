@@ -22,11 +22,10 @@ CRGB leds[NUM_LEDS];
 String CLOCK_TYPE = "word-clock";
 String ROOM_NAME = "Wohnzimmer"; //Needs to be configurable
 
-boolean isConnectedToWifi = false;
-
-char ssid[32] = "Seip"; //Needs to be configurable
-char pass[32] = "connect.me"; //Needs to be configurable
+char ssid[32] = "WordClock"; //Needs to be configurable
+char pass[32] = "99crafts"; //Needs to be configurable
 const long utcOffsetInSeconds = 7200;
+boolean isConnectedToWifi = false;
 
 WiFiUDP ntpUDP;
 WiFiClient client;
@@ -42,9 +41,9 @@ int heartLEDs[HEART_LEDS] = {38, 48, 62, 69, 83, 71, 81, 73, 58, 50 };
 
 struct CURRENT_TIME {
   int hours;
-  int minutes;  
+  int minutes;
 
-  CURRENT_TIME(int h, int m){
+  CURRENT_TIME(int h, int m) {
     hours = h;
     minutes = m;
   }
@@ -106,12 +105,7 @@ void setup()
   rest.function("wordclockfreya", showFreya);
 
   //Opposite of beginAP is WiFi.begin
-  WiFi.begin(ssid, pass);
-
-  while ( WiFi.status() != WL_CONNECTED ) {
-    delay ( 500 );
-    Serial.print ( "." );
-  }
+  WiFi.softAP(ssid, pass);
 
   Serial.println(WiFi.localIP());
 
@@ -137,7 +131,7 @@ void loop()
     rest.handle(client);
     handleClockFunctions();
   }
-  
+
   handleClockFunctions();
   delay(100);
 }
@@ -188,22 +182,22 @@ int changeClockName(String clockName) {
 }
 
 void handleClockFunctions() {
-  /*if(isConnectedToWifi) {*/
-  CURRENT_TIME currentTime = getTimeFromNTPServer();
-  
-  resetAllLEDs();
-  showBasicClockElements();
-  showMinuteLEDs(currentTime.minutes, currentTime.hours, showUhrWord);
-  showHourLEDs(currentTime.hours);
+  if (isConnectedToWifi) {
+    CURRENT_TIME currentTime = getTimeFromNTPServer();
 
-  if (showUhrWord)
-  {
-    //Light up the LEDs for the word "UHR"
-    leds[8] = CRGB(color[1], color[0], color[2]);
-    leds[9] = CRGB(color[1], color[0], color[2]);
-    leds[10] = CRGB(color[1], color[0], color[2]);
-  }
-  /*} else {
+    resetAllLEDs();
+    showBasicClockElements();
+    showMinuteLEDs(currentTime.minutes, currentTime.hours, showUhrWord);
+    showHourLEDs(currentTime.hours);
+
+    if (showUhrWord)
+    {
+      //Light up the LEDs for the word "UHR"
+      leds[8] = CRGB(color[1], color[0], color[2]);
+      leds[9] = CRGB(color[1], color[0], color[2]);
+      leds[10] = CRGB(color[1], color[0], color[2]);
+    }
+  } else {
     leds[83] = CRGB(color[1], color[0], color[2]);
     leds[70] = CRGB(color[1], color[0], color[2]);
     leds[61] = CRGB(color[1], color[0], color[2]);
@@ -213,7 +207,7 @@ void handleClockFunctions() {
     leds[72] = CRGB(color[1], color[0], color[2]);
     leds[73] = CRGB(color[1], color[0], color[2]);
     leds[74] = CRGB(color[1], color[0], color[2]);
-    }*/
+  }
 
   FastLED.show();
 }
@@ -225,11 +219,18 @@ CURRENT_TIME getTimeFromNTPServer() {
 }
 
 void beginWifiServer() {
+  WiFi.disconnect();
+  
+  WiFi.begin(ssid, pass);
+
+  while ( WiFi.status() != WL_CONNECTED ) {
+    delay ( 500 );
+    Serial.print ( "." );
+  }
+
   isConnectedToWifi = true;
-  //WiFi.end();
-  //WiFi.begin(ssid, pass);
-  //server.begin();
-  //Serial.println(WiFi.localIP());
+  server.begin();
+  Serial.println(WiFi.localIP());
 }
 
 int showFreya(String command) {
@@ -263,7 +264,7 @@ void showHourLEDs(int &hours) {
   Serial.print("Hour that will be shown: ");
   Serial.println(clockElement.GetNumericValuePM());
   Serial.println("");
-  
+
   setColorForClockElement(clockElement, color[1], color[0], color[2]);
 }
 
@@ -386,21 +387,23 @@ ClockElement findClockElementByNumericValueAndType(int numericValue, CLOCK_ELEME
   {
     ClockElement clockElement = timeClockElements[i];
 
-    if (elementType == MINUTE && clockElement.GetClockElementType() == MINUTE) {if((numericValue==clockElement.GetNumericValueAM()||numericValue==clockElement.GetNumericValuePM())){
+    if (elementType == MINUTE && clockElement.GetClockElementType() == MINUTE) {
+      if ((numericValue == clockElement.GetNumericValueAM() || numericValue == clockElement.GetNumericValuePM())) {
         return timeClockElements[i];
       }
-    } else if (elementType == HOUR && clockElement.GetClockElementType() == HOUR) {if(numericValue==clockElement.GetNumericValueAM()||numericValue==clockElement.GetNumericValuePM()){
+    } else if (elementType == HOUR && clockElement.GetClockElementType() == HOUR) {
+      if (numericValue == clockElement.GetNumericValueAM() || numericValue == clockElement.GetNumericValuePM()) {
         return timeClockElements[i];
       }
 
     }
   }
 
-  if(foundElement == NULL) {
+  if (foundElement == NULL) {
     Serial.print("foundElement of type ");
-    if(elementType == HOUR){
+    if (elementType == HOUR) {
       Serial.println("hour is NULL");
-    } else if(elementType == MINUTE) {
+    } else if (elementType == MINUTE) {
       Serial.println("minute is NULL");
     }
   }
