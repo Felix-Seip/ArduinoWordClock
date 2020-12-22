@@ -19,12 +19,19 @@
 
 aREST rest = aREST();
 CRGB leds[NUM_LEDS];
-String CLOCK_TYPE = "word-clock";
-String ROOM_NAME = "Wohnzimmer"; //Needs to be configurable
 
-char ssid[32] = "WordClock"; //Needs to be configurable
-char pass[32] = "99crafts"; //Needs to be configurable
-const long utcOffsetInSeconds = 7200;
+IPAddress ip(192, 168, 2, 177);
+
+/****************************************************
+*****************CONFIGURE WIFI HERE*****************
+*****************************************************/
+char ssid[32] = "Seip"; 
+char pass[32] = "connect.me"; 
+
+IPAddress gateway(192, 168, 2, 1);
+IPAddress subnet(255, 255, 255, 0);
+
+long utcOffsetInSeconds = 7200;
 boolean isConnectedToWifi = false;
 
 WiFiUDP ntpUDP;
@@ -106,8 +113,15 @@ void setup()
   rest.function("setDST", setDST);
 
   //Opposite of beginAP is WiFi.begin
-  WiFi.softAP(ssid, pass);
-  Serial.println(WiFi.softAPIP());
+  WiFi.config(ip, gateway, subnet);
+  WiFi.begin(ssid, pass);
+  while ( WiFi.status() != WL_CONNECTED ) {
+    delay ( 500 );
+    Serial.print ( "." );
+  }
+
+  
+  Serial.println(WiFi.localIP());
 
   server.begin();
   // you're connected now, so print out the status:
@@ -136,7 +150,8 @@ void loop()
   delay(100);
 }
 
-int setDST() {
+int setDST(String dst) {
+  utcOffsetInSeconds = dst.toInt();  
   return 1;
 }
 
@@ -178,8 +193,6 @@ int configureClock(String configuration) {
     }
   }
 
-  beginWifiServer();
-
   return 1;
 }
 
@@ -188,7 +201,7 @@ int changeClockName(String clockName) {
 }
 
 void handleClockFunctions() {
-  if (isConnectedToWifi) {
+
     CURRENT_TIME currentTime = getTimeFromNTPServer();
 
     resetAllLEDs();
@@ -203,17 +216,6 @@ void handleClockFunctions() {
       leds[9] = CRGB(color[1], color[0], color[2]);
       leds[10] = CRGB(color[1], color[0], color[2]);
     }
-  } else {
-    leds[83] = CRGB(color[1], color[0], color[2]);
-    leds[70] = CRGB(color[1], color[0], color[2]);
-    leds[61] = CRGB(color[1], color[0], color[2]);
-    leds[48] = CRGB(color[1], color[0], color[2]);
-    leds[39] = CRGB(color[1], color[0], color[2]);
-
-    leds[72] = CRGB(color[1], color[0], color[2]);
-    leds[73] = CRGB(color[1], color[0], color[2]);
-    leds[74] = CRGB(color[1], color[0], color[2]);
-  }
 
   FastLED.show();
 }
@@ -222,26 +224,6 @@ CURRENT_TIME getTimeFromNTPServer() {
   timeClient.update();
   delay(1000);
   return CURRENT_TIME(timeClient.getHours(), timeClient.getMinutes());
-}
-
-void beginWifiServer() {
-  WiFi.disconnect();
-
-  while ( WiFi.status() == WL_CONNECTED ) {
-    delay ( 500 );
-    Serial.print ( "." );
-  }
-  
-  WiFi.begin(ssid, pass);
-
-  while ( WiFi.status() != WL_CONNECTED ) {
-    delay ( 500 );
-    Serial.print ( "." );
-  }
-
-  isConnectedToWifi = true;
-  server.begin();
-  Serial.println(WiFi.localIP());
 }
 
 int showFreya(String command) {
