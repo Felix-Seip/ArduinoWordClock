@@ -101,13 +101,9 @@ void setup()
 {
   Serial.begin(9600);
 
-  rest.variable("type", &CLOCK_TYPE);
-  rest.variable("room_name", &ROOM_NAME);
-
   // Function to be exposed
   rest.function("clockcolor", setPixelColor);
   rest.function("clockconfiguration", configureClock);
-  rest.function("clockname", changeClockName);
 
   rest.function("wordclockfreya", showFreya);
   rest.function("setDST", setDST);
@@ -188,16 +184,10 @@ int configureClock(String configuration) {
       Serial.println(ssid);
     } else if (configKeyValue[0].equals("password")) {
       configKeyValue[1].toCharArray(pass, configKeyValue[1].length() + 1);
-    } else if (configKeyValue[0].equals("room-name")) {
-      ROOM_NAME = configKeyValue[1];
-    }
+    } 
   }
 
   return 1;
-}
-
-int changeClockName(String clockName) {
-  ROOM_NAME = clockName;
 }
 
 void handleClockFunctions() {
