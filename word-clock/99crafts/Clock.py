@@ -50,6 +50,18 @@ class Clock:
         except KeyboardInterrupt:
             print("Keyboard Interupt")
 
+    def freya(self):
+        for i in range(75, 79, 1):
+            self.strip.setPixelColor(i, Color(0, 255, 0))
+            self.strip.show()
+        for i in range(len(self.heartLEDs)):
+            self.strip.setPixelColor(i, Color(0, 255, 0))
+            self.strip.show()
+        time.sleep(1)
+        for i in range(len(self.heartLEDs)):
+            self.strip.setPixelColor(i, Color(0, 0, 0))
+            self.strip.show()
+
     def show_base_elements(self):
         for i in range(110, 112, 1):
             # self.strip.setPixelColor(i, Color(255, 255, 255))

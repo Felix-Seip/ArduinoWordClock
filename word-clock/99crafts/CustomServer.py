@@ -9,30 +9,46 @@ from flask import Flask
 
 
 class CustomServer(Server):
-    app = Flask(__name__)
+    LED_COUNT = 125
+    LED_PIN = 18
+    LED_FREQ_HZ = 800000
+    LED_DMA = 10
+    LED_BRIGHTNESS = 255
+    LED_INVERT = False
+    LED_CHANNEL = 0
 
-    def __init__(self, strip, app, *args, **kwargs):
+    def __call__(self, app, *args, **kwargs):
         self.app = app
-        self.strip = strip
+        self.strip = self.setup_strip()
+        self.clock = Clock(self.strip)
 
-        thread = Thread(target=self.threaded_function, args=(strip,))
+        thread = Thread(target=self.threaded_function, args=(self.clock,))
         thread.start()
         return Server.__call__(self, app, *args, **kwargs)
 
-    @app.route('/')
-    def hello_world(self):
-        # self.strip.setPixelColor(0, Color(255, 0, 0))
-        return 'Hello, World!'
+    def setup_strip(self):
+        print("Setup strip")
+        # strip = Adafruit_NeoPixel(
+        #     LED_COUNT,
+        #     LED_PIN,
+        #     LED_FREQ_HZ,
+        #     LED_DMA,
+        #     LED_INVERT,
+        #     LED_BRIGHTNESS,
+        #     LED_CHANNEL)
 
-    @app.route('/freya')
+        # strip.begin()
+        # return strip
+        return ""
+
     def freya(self):
-        return 'Freya'
+        self.clock.freya()
+        return "Freya"
 
-    @staticmethod
-    def threaded_function(strip):
+    def threaded_function(self, clock):
         try:
-            clock = Clock(strip)
-            clock.start()
+            # clock.start()
+            print("")
 
         except KeyboardInterrupt:
             print("Keyboard Interupt")
