@@ -8,9 +8,7 @@ class ClockElementType(Enum):
 
 
 class ClockElement:
-    def __init__(self, numeric_value_am, numeric_value_pm, led_from, led_to, element_type):
-        self.numeric_value_am = numeric_value_am
-        self.numeric_value_pm = numeric_value_pm
+    def __init__(self, led_from, led_to, element_type):
         self.led_from = led_from
         self.led_to = led_to
         self.element_type = element_type
@@ -20,9 +18,3 @@ class ClockElement:
 
     def get_range_to(self):
         return self.led_to
-
-    def get_numeric_value_am(self):
-        return self.numeric_value_am
-
-    def get_numeric_value_pm(self):
-        return self.numeric_value_pm

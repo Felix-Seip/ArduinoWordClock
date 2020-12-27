@@ -1,14 +1,16 @@
 from flask_script import Server
 from threading import Thread
 
-from rpi_ws281x import *
+# from rpi_ws281x import *
 
-import Clock
+from Clock import *
+
+from flask import Flask
 
 class CustomServer(Server):
-    app = ""
+    app = Flask(__name__)
 
-    def __call__(self, strip, app, *args, **kwargs):
+    def __init__(self, strip, app, *args, **kwargs):
         self.app = app
         self.strip = strip
 
@@ -18,7 +20,7 @@ class CustomServer(Server):
 
     @app.route('/')
     def hello_world(self):
-        self.strip.setPixelColor(0, Color(255, 0, 0))
+        # self.strip.setPixelColor(0, Color(255, 0, 0))
         return 'Hello, World!'
 
     @app.route('/freya')
@@ -28,7 +30,7 @@ class CustomServer(Server):
     @staticmethod
     def threaded_function(strip):
         try:
-            clock = Clock()
+            clock = Clock(strip)
             clock.start()
 
         except KeyboardInterrupt:
