@@ -56,6 +56,7 @@ class Clock:
             self.strip.show()
         for i in range(len(self.heartLEDs)):
             self.strip.setPixelColor(i, Color(0, 255, 0))
+            time.sleep(0.5)
             self.strip.show()
         time.sleep(1)
         for i in range(len(self.heartLEDs)):
