@@ -72,7 +72,7 @@ class Clock:
                     self.show_nach_word()
             if 60 - minute > 35 and not (0 <= minute < 5):
                 self.show_nach_word()
-            elif 60 - minute > 25 and not (0 <= minute < 5):
+            elif 60 - minute < 25 and not (0 <= minute < 5):
                 self.show_vor_word()
             if 60 - minute < 25 or 25 <= minute < 30 or 35 <= minute < 40 or 30 <= minute < 35:
                 hour += 1
@@ -89,7 +89,7 @@ class Clock:
 
     @staticmethod
     def show_vor_word():
-        for i in range(85, 87, 1):
+        for i in range(85, 88, 1):
             print("", i)
             # self.strip.setPixelColor(i, Color(255, 255, 255))
 
@@ -100,7 +100,7 @@ class Clock:
 
     @staticmethod
     def show_nach_word():
-        for i in range(66, 69, 1):
+        for i in range(66, 70, 1):
             print("", i)
             # self.strip.setPixelColor(i, Color(255, 255, 255))
 

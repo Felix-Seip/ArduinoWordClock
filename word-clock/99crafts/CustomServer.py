@@ -32,7 +32,7 @@ class CustomServer(Server):
     def threaded_function(strip):
         try:
             clock = Clock(strip)
-            # clock.start()
+            clock.start()
 
         except KeyboardInterrupt:
             print("Keyboard Interupt")
