@@ -3,7 +3,8 @@ import time
 from time import ctime
 from datetime import datetime
 import ntplib
-# from rpi_ws281x import *
+from rpi_ws281x import *
+import math
 
 
 class Clock:
@@ -33,36 +34,41 @@ class Clock:
                 current_time = datetime.strptime(ctime(response.tx_time), "%a %b %d %H:%M:%S %Y")
                 print("Current time is: " + current_time.strftime("%a %b %d %H:%M:%S %Y"))
 
-                self.show_base_elements()
 
                 print("setting clock LEDs to the current time")
-                self.reset_all_leds()
-                self.show_hours(current_time.hour)
+                #self.reset_all_leds()
+                self.show_hours(current_time.hour + 1)
+                #self.show_base_elements()
 
-                minute = 5 * round(current_time.minute / 5)
+                minute = 5 * math.floor(current_time.minute / 5)
                 if minute == 0:
                     print("whole hour detected... not gonna show any vor / nach or minute leds")
 
-                self.show_minutes(minute)
-                time.sleep(5)
+                #self.show_minutes(minute)
+                self.strip.show()
+                time.sleep(10)
         except KeyboardInterrupt:
             print("Keyboard Interupt")
 
     def show_base_elements(self):
-        for i in range(110, 116, 1):
-            self.strip.setPixelColor(i, Color(0, 0, 0))
+        for i in range(110, 112, 1):
+            self.strip.setPixelColor(i, Color(255, 255, 255))
+            self.strip.show()
+        for i in range(113, 116, 1):
+            self.strip.setPixelColor(i, Color(255, 255, 255))
+            self.strip.show()
 
     def show_hours(self, hour):
         hour = self.hour_elements.get(hour)
-        for i in range(hour.get_range_from(), hour.get_range_to() + 1, 1):
-            print("setting led %d", i)
-            self.strip.setPixelColor(i, Color(0, 0, 0))
+        for i in range(hour.get_range_from(), hour.get_range_to(), 1):
+            #print("setting led %d", i)
+            self.strip.setPixelColor(i, Color(255, 255, 255))
 
     def show_minutes(self, rounded_minute):
         minute = self.minute_elements.get(rounded_minute)
-        for i in range(minute.get_range_from(), minute.get_range_to() + 1, 1):
-            print("setting led %d", i)
-            self.strip.setPixelColor(i, Color(0, 0, 0))
+        for i in range(minute.get_range_from(), minute.get_range_to(), 1):
+            #print("setting led %d", i)
+            self.strip.setPixelColor(i, Color(255, 255, 255))
 
     def reset_all_leds(self):
         # Reset time words

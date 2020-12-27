@@ -1,7 +1,7 @@
 from flask_script import Server
 from threading import Thread
 
-# from rpi_ws281x import *
+from rpi_ws281x import *
 
 from Clock import *
 
@@ -20,7 +20,7 @@ class CustomServer(Server):
 
     @app.route('/')
     def hello_world(self):
-        # self.strip.setPixelColor(0, Color(255, 0, 0))
+        self.strip.setPixelColor(0, Color(255, 0, 0))
         return 'Hello, World!'
 
     @app.route('/freya')
