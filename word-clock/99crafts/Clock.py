@@ -37,7 +37,7 @@ class Clock:
                 print("setting clock LEDs to the current time")
                 self.reset_all_leds()
                 # self.show_base_elements()
-                hour = self.show_minutes(current_time.minute, current_time.hour)
+                hour = self.show_minutes(30, 16)
                 self.show_hours(hour)
 
                 if 0 <= current_time.minute < 5:
@@ -64,8 +64,8 @@ class Clock:
     def show_minutes(self, minute, hour):
         if minute != 0:
             if (25 <= minute < 30) or (35 <= minute < 40):
-                minute = self.minute_elements.get(5)
-                self.show_clock_element(minute)
+                minute_element = self.minute_elements.get(5)
+                self.show_clock_element(minute_element)
                 if 25 <= minute < 30:
                     self.show_vor_word()
                 elif 35 <= minute < 40:
@@ -81,14 +81,12 @@ class Clock:
         self.show_clock_element(self.minute_elements.get(5 * math.floor(minute / 5)))
         return hour
 
-    @staticmethod
-    def show_clock_element(element):
+    def show_clock_element(self, element):
         for i in range(element.get_range_from(), element.get_range_to(), 1):
             print("", i)
             # self.strip.setPixelColor(i, Color(255, 255, 255))
 
-    @staticmethod
-    def show_vor_word():
+    def show_vor_word(self):
         for i in range(85, 88, 1):
             print("", i)
             # self.strip.setPixelColor(i, Color(255, 255, 255))
@@ -98,8 +96,7 @@ class Clock:
             print("", i)
             # self.strip.setPixelColor(i, Color(255, 255, 255))
 
-    @staticmethod
-    def show_nach_word():
+    def show_nach_word(self):
         for i in range(66, 70, 1):
             print("", i)
             # self.strip.setPixelColor(i, Color(255, 255, 255))
@@ -134,7 +131,7 @@ class Clock:
         minute_distance = 60
         range_index = 12
 
-        for i in range(0, 30, 5):
+        for i in range(0, 35, 5):
             numeric_value_am = i
             numeric_value_pm = i + minute_distance
 
