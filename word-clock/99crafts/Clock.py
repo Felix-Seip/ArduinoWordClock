@@ -41,7 +41,7 @@ class Clock:
                 self.show_hours(hour)
                 print("Minuten: ", current_time.minute)
                 print("Stunden: ", current_time.hour)
-                if 0 <= current_time.minutte < 5:
+                if 0 <= current_time.minute < 5:
                     for i in range(8, 11, 1):
                         #print("", i)
                         self.strip.setPixelColor(i, Color(255, 255, 255))
@@ -142,6 +142,7 @@ class Clock:
                                                                 18,
                                                                 ClockElementType(1))
             else:
+                print("Setting range for hour ", i)
                 self.hour_elements[numeric_value_am] = ClockElement(self.timeClockElementRangeFrom[i - 1],
                                                                 self.timeClockElementRangeTo[i - 1],
                                                                 ClockElementType(1))
