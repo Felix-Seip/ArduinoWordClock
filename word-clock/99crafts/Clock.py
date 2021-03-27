@@ -41,13 +41,13 @@ class Clock:
                 self.show_hours(hour)
                 print("Minuten: ", current_time.minute)
                 print("Stunden: ", current_time.hour)
-                if 0 <= current_time.minute < 5:
-                    for i in range(8, 10, 1):
+                if 0 <= current_time.minutte < 5:
+                    for i in range(8, 11, 1):
                         #print("", i)
                         self.strip.setPixelColor(i, Color(255, 255, 255))
 
                 self.strip.show()
-                time.sleep(10)
+                time.sleep(60)
         except KeyboardInterrupt:
             print("Keyboard Interupt")
 
@@ -73,6 +73,7 @@ class Clock:
             self.strip.show()
 
     def show_hours(self, hour):
+        print(self.hour_elements.get(hour).led_from)
         self.show_clock_element(self.hour_elements.get(hour))
 
     def show_minutes(self, minute, hour):
@@ -86,7 +87,7 @@ class Clock:
                     self.show_nach_word()
             if 60 - minute > 35 and not (0 <= minute < 5):
                 self.show_nach_word()
-            elif 60 - minute < 25 and not (0 <= minute < 5):
+            elif 60 - minute < 21 and not (0 <= minute < 5):
                 self.show_vor_word()
             if 60 - minute < 25 or 25 <= minute < 30 or 35 <= minute < 40 or 30 <= minute < 35:
                 hour += 1
@@ -132,12 +133,22 @@ class Clock:
             numeric_value_pm = i + 12
             if i + 12 == 24:
                 numeric_value_pm = 0
-            self.hour_elements[numeric_value_am] = ClockElement(self.timeClockElementRangeFrom[i - 1],
+            if i == 0 or i == 12:
+                print("Setting range for hour 12")
+                self.hour_elements[numeric_value_am] = ClockElement(13,
+                                                                18,
+                                                                ClockElementType(1))
+                self.hour_elements[numeric_value_pm] = ClockElement(13,
+                                                                18,
+                                                                ClockElementType(1))
+            else:
+                self.hour_elements[numeric_value_am] = ClockElement(self.timeClockElementRangeFrom[i - 1],
                                                                 self.timeClockElementRangeTo[i - 1],
                                                                 ClockElementType(1))
-            self.hour_elements[numeric_value_pm] = ClockElement(self.timeClockElementRangeFrom[i - 1],
+                self.hour_elements[numeric_value_pm] = ClockElement(self.timeClockElementRangeFrom[i - 1],
                                                                 self.timeClockElementRangeTo[i - 1],
                                                                 ClockElementType(1))
+
             clock_element_index += 1
         return clock_element_index
 
