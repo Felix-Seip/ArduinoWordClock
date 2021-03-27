@@ -1,7 +1,7 @@
 from flask_script import Server
 from threading import Thread
 
-# from rpi_ws281x import *
+from rpi_ws281x import *
 
 from Clock import *
 
@@ -28,18 +28,17 @@ class CustomServer(Server):
 
     def setup_strip(self):
         print("Setup strip")
-        # strip = Adafruit_NeoPixel(
-        #     LED_COUNT,
-        #     LED_PIN,
-        #     LED_FREQ_HZ,
-        #     LED_DMA,
-        #     LED_INVERT,
-        #     LED_BRIGHTNESS,
-        #     LED_CHANNEL)
+        strip = Adafruit_NeoPixel(
+            self.LED_COUNT,
+            self.LED_PIN,
+            self.LED_FREQ_HZ,
+            self.LED_DMA,
+            self.LED_INVERT,
+            self.LED_BRIGHTNESS,
+            self.LED_CHANNEL)
 
-        # strip.begin()
-        # return strip
-        return ""
+        strip.begin()
+        return strip
 
     def freya(self):
         self.clock.freya()
@@ -47,7 +46,7 @@ class CustomServer(Server):
 
     def threaded_function(self, clock):
         try:
-            # clock.start()
+            clock.start()
             print("")
 
         except KeyboardInterrupt:
