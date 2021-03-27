@@ -1,0 +1,14 @@
+[Unit]
+Description=My Script Service
+WantedBy=multi-user.target
+WantedBy=network-online.target
+After=networking.service
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi
+ExecStart=sudo python3 /home/pi/ArduinoWordClock/word-clock/99crafts/start.py runserver --host 0.0.0$
+
+[Install]
+WantedBy=multi-user.target
